@@ -1,0 +1,44 @@
+{
+	"_comment": "Attribute names and tooltips from the Game Mechanics doc. Spell power, crit, cast speed and resource size are computed by CombatStats in res://systems/combat/; progression only owns health, which depends on level.",
+	"order": [
+		"strength",
+		"vitality",
+		"dexterity",
+		"intelligence",
+		"wisdom"
+	],
+	"base_value": 10,
+	"attributes": {
+		"strength": {
+			"name": "Strength",
+			"short": "Str",
+			"tooltip": "+1% force damage, +0.5% stagger resistance and further knockback per point. Unlocks heavy staves and warded robes."
+		},
+		"vitality": {
+			"name": "Vitality",
+			"short": "Vit",
+			"tooltip": "+5 health and +0.1 health per second per point. Sorcerer: +1% spell power and +1 strain capacity per 2 points."
+		},
+		"dexterity": {
+			"name": "Dexterity",
+			"short": "Dex",
+			"tooltip": "+0.5% cast speed, +0.3% critical chance and -0.5% Blink cooldown per point. Unlocks wands, light boots and rings of speed."
+		},
+		"intelligence": {
+			"name": "Intelligence",
+			"short": "Int",
+			"tooltip": "+2 maximum resource and +1% critical damage per point. Mage: +1% spell power. Wizard: +1 prepared spell per 25 points."
+		},
+		"wisdom": {
+			"name": "Wisdom",
+			"short": "Wis",
+			"tooltip": "+1% resource regeneration and +0.3% to all resistances per point. Wizard: +1% cast speed and interrupt resistance. Mage: fewer misfires."
+		}
+	},
+	"derived": {
+		"base_health": 40.0,
+		"health_per_level": 10.0,
+		"health_per_vitality": 5.0,
+		"health_regen_per_vitality": 0.1
+	}
+}

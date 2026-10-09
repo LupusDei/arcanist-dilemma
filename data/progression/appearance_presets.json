@@ -1,0 +1,242 @@
+{
+	"_comment": "Character creation presets. Kept short on purpose (Reason: boy or girl plus light look customization). ids are stable save keys; colors are placeholder tints for the procedural model.",
+	"bodies": [
+		{
+			"id": "boy",
+			"name": "Boy"
+		},
+		{
+			"id": "girl",
+			"name": "Girl"
+		}
+	],
+	"name_max_length": 20,
+	"default_names": {
+		"boy": [
+			"Aren",
+			"Tobin",
+			"Caspian",
+			"Rowan",
+			"Elric"
+		],
+		"girl": [
+			"Lyra",
+			"Maren",
+			"Isolde",
+			"Wren",
+			"Seren"
+		]
+	},
+	"faces": [
+		{
+			"id": "face_1",
+			"name": "Round"
+		},
+		{
+			"id": "face_2",
+			"name": "Oval"
+		},
+		{
+			"id": "face_3",
+			"name": "Long"
+		},
+		{
+			"id": "face_4",
+			"name": "Freckled"
+		},
+		{
+			"id": "face_5",
+			"name": "Sharp"
+		},
+		{
+			"id": "face_6",
+			"name": "Soft"
+		}
+	],
+	"skins": [
+		{
+			"id": "skin_1",
+			"name": "Porcelain",
+			"color": "#f6dccb"
+		},
+		{
+			"id": "skin_2",
+			"name": "Fair",
+			"color": "#ecc3a5"
+		},
+		{
+			"id": "skin_3",
+			"name": "Olive",
+			"color": "#c9a07a"
+		},
+		{
+			"id": "skin_4",
+			"name": "Tan",
+			"color": "#b07b52"
+		},
+		{
+			"id": "skin_5",
+			"name": "Brown",
+			"color": "#8a5a3b"
+		},
+		{
+			"id": "skin_6",
+			"name": "Deep",
+			"color": "#5c3a26"
+		}
+	],
+	"hair_styles": [
+		{
+			"id": "cropped",
+			"name": "Cropped",
+			"bodies": [
+				"boy",
+				"girl"
+			]
+		},
+		{
+			"id": "tousled",
+			"name": "Tousled",
+			"bodies": [
+				"boy",
+				"girl"
+			]
+		},
+		{
+			"id": "long_and_loose",
+			"name": "Long and loose",
+			"bodies": [
+				"boy",
+				"girl"
+			]
+		},
+		{
+			"id": "braid",
+			"name": "Braid",
+			"bodies": [
+				"girl",
+				"boy"
+			]
+		},
+		{
+			"id": "bun",
+			"name": "Bun",
+			"bodies": [
+				"girl"
+			]
+		},
+		{
+			"id": "shaved_sides",
+			"name": "Shaved sides",
+			"bodies": [
+				"boy"
+			]
+		},
+		{
+			"id": "wild_curls",
+			"name": "Wild curls",
+			"bodies": [
+				"boy",
+				"girl"
+			]
+		}
+	],
+	"hair_colors": [
+		{
+			"id": "black",
+			"name": "Black",
+			"color": "#1c1714"
+		},
+		{
+			"id": "brown",
+			"name": "Brown",
+			"color": "#5a3a24"
+		},
+		{
+			"id": "auburn",
+			"name": "Auburn",
+			"color": "#8a3b1e"
+		},
+		{
+			"id": "copper",
+			"name": "Copper",
+			"color": "#b5602a"
+		},
+		{
+			"id": "blond",
+			"name": "Blond",
+			"color": "#d8b56a"
+		},
+		{
+			"id": "ash",
+			"name": "Ash",
+			"color": "#9a948c"
+		},
+		{
+			"id": "white",
+			"name": "White",
+			"color": "#e8e4dc"
+		}
+	],
+	"eyes": [
+		{
+			"id": "brown",
+			"name": "Brown",
+			"color": "#5b3a1f"
+		},
+		{
+			"id": "hazel",
+			"name": "Hazel",
+			"color": "#8a6a2f"
+		},
+		{
+			"id": "green",
+			"name": "Green",
+			"color": "#3f7a4a"
+		},
+		{
+			"id": "blue",
+			"name": "Blue",
+			"color": "#3f6fa8"
+		},
+		{
+			"id": "grey",
+			"name": "Grey",
+			"color": "#7d8790"
+		},
+		{
+			"id": "amber",
+			"name": "Amber",
+			"color": "#c08a2a"
+		}
+	],
+	"builds": [
+		{
+			"id": "slight",
+			"name": "Slight",
+			"scale": [
+				0.92,
+				0.97,
+				0.92
+			]
+		},
+		{
+			"id": "average",
+			"name": "Average",
+			"scale": [
+				1.0,
+				1.0,
+				1.0
+			]
+		},
+		{
+			"id": "sturdy",
+			"name": "Sturdy",
+			"scale": [
+				1.1,
+				1.0,
+				1.08
+			]
+		}
+	]
+}
