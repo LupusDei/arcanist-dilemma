@@ -39,6 +39,7 @@ var loaded_extra: Dictionary = {}
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	add_to_group("progression")  # how GameUI finds its progression source
 	for s in FORWARDED:
 		progression.connect(s, Callable(self, "_forward_" + s))
 	appearance.changed.connect(appearance_changed.emit)
@@ -56,6 +57,11 @@ func new_character(p_appearance: CharacterAppearance) -> void:
 	play_time_seconds = 0.0
 	loaded_extra = {}
 	character_loaded.emit()
+
+
+## Starts a new character from the creation screen's UiSession.character dictionary.
+func new_character_from_ui(ui_character: Dictionary) -> void:
+	new_character(CharacterAppearance.from_ui_dict(ui_character))
 
 
 func grant_xp(amount: int, source := "") -> int:
@@ -91,6 +97,66 @@ func load_game(slot: int) -> bool:
 	loaded_extra = data.get("extra", {})
 	character_loaded.emit()
 	return true
+
+
+# --- UI contract (res://ui/README.md, "What the UI expects from progression") ---
+
+## Everything the HUD, character sheet and talent picker draw, in one dictionary.
+func get_stats() -> Dictionary:
+	var p := progression
+	var tree := {"name": "", "rows": []}
+	var choices: Array[int] = []
+	if not p.specialization.is_empty():
+		tree["name"] = ProgressionData.get_specialization(p.path, p.specialization).get("name", "")
+		for row in ProgressionData.get_specialization(p.path, p.specialization).get("talent_rows", []):
+			var options: Array = []
+			var chosen := -1
+			for option in row["options"]:
+				if p.talents.get(int(row["level"]), "") == option["id"]:
+					chosen = options.size()
+				options.append({"id": option["id"], "name": option["name"], "text": option["description"]})
+			tree["rows"].append({"level": int(row["level"]), "options": options})
+			choices.append(chosen)
+	var attrs := {}
+	for a in ProgressionData.ATTRIBUTES:
+		attrs[a] = p.get_attribute(a)
+	return {
+		"name": appearance.character_name,
+		"level": p.level,
+		"xp": p.xp,
+		"xp_to_next": p.xp_to_next_level(),
+		"path": "arcanist" if p.path.is_empty() else p.path,
+		"specialization": p.specialization,
+		"attributes": attrs,
+		"unspent_attribute_points": p.unspent_attribute_points(),
+		"unspent_spell_points": 0 if p.path == "wizard" else p.spell_growth_available(),
+		"talent_tree": tree,
+		"talent_choices": choices,
+		"max_health": p.max_health(),
+		"pending_choices": p.pending_choices(),
+	}
+
+
+## Spends staged attribute points in one call, e.g. {&"intelligence": 3, &"dexterity": 2}.
+func allocate_attributes(points: Dictionary) -> bool:
+	return progression.allocate_many(points)
+
+
+## Picks option [param choice] in talent row [param row] (indexes into get_stats().talent_tree.rows).
+## Picking a different option in a filled row swaps it, since talent rows reset for free.
+func choose_talent(row: int, choice: int) -> bool:
+	var rows: Array = get_stats()["talent_tree"]["rows"]
+	if row < 0 or row >= rows.size() or choice < 0 or choice >= rows[row]["options"].size():
+		return false
+	var row_level: int = rows[row]["level"]
+	var talent_id: String = rows[row]["options"][choice]["id"]
+	if not row_level in progression.unlocked_talent_rows():
+		return false
+	if progression.talents.get(row_level, "") == talent_id:
+		return true
+	if progression.talents.has(row_level):
+		progression.reset_talent_row(row_level)
+	return progression.choose_talent(row_level, talent_id)
 
 
 func _forward_xp_gained(amount: int, source: String) -> void: xp_gained.emit(amount, source)

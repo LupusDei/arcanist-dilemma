@@ -122,6 +122,31 @@ func to_dict() -> Dictionary:
 	return d
 
 
+## Maps between this class and the creation screen's UiSession.character
+## ({name, sex, face, skin, hair, hair_color, eyes, build} as preset indices).
+const UI_KEYS := {"face": "face", "skin": "skin", "hair": "hair_style", "hair_color": "hair_color", "eyes": "eyes", "build": "build"}
+
+
+## Builds an appearance from the creation screen's index dictionary. Out-of-range indices are clamped.
+static func from_ui_dict(d: Dictionary) -> CharacterAppearance:
+	var bodies := ProgressionData.preset_ids("bodies")
+	var a := create_default(bodies[clampi(int(d.get("sex", 0)), 0, bodies.size() - 1)])
+	if is_valid_name(str(d.get("name", ""))):
+		a.character_name = str(d["name"]).strip_edges()
+	for ui_key in UI_KEYS:
+		var opts := a.options_for(UI_KEYS[ui_key])
+		a.set(UI_KEYS[ui_key], opts[clampi(int(d.get(ui_key, 0)), 0, opts.size() - 1)])
+	return a
+
+
+## The creation screen's index dictionary for this appearance, e.g. for UiSession.character after a load.
+func to_ui_dict() -> Dictionary:
+	var d := {"name": character_name, "sex": maxi(options_for("body").find(body), 0)}
+	for ui_key in UI_KEYS:
+		d[ui_key] = maxi(options_for(UI_KEYS[ui_key]).find(get(UI_KEYS[ui_key])), 0)
+	return d
+
+
 static func from_dict(d: Dictionary) -> CharacterAppearance:
 	var a := CharacterAppearance.new()
 	a.apply_dict(d)

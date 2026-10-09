@@ -1,5 +1,5 @@
 {
-	"_comment": "Character creation presets. Kept short on purpose (Reason: boy or girl plus light look customization). ids are stable save keys; colors are placeholder tints for the procedural model.",
+	"_comment": "Character creation presets. Kept short on purpose (Reason: boy or girl plus light look customization). Lists match ui/data/ui_character_presets.gd entry for entry and in the same order, so the creation screen's indices map straight onto these ids. ids are stable save keys.",
 	"bodies": [
 		{
 			"id": "boy",
@@ -29,214 +29,156 @@
 	},
 	"faces": [
 		{
-			"id": "face_1",
+			"id": "round",
 			"name": "Round"
 		},
 		{
-			"id": "face_2",
+			"id": "oval",
 			"name": "Oval"
 		},
 		{
-			"id": "face_3",
-			"name": "Long"
+			"id": "heart",
+			"name": "Heart"
 		},
 		{
-			"id": "face_4",
-			"name": "Freckled"
-		},
-		{
-			"id": "face_5",
-			"name": "Sharp"
-		},
-		{
-			"id": "face_6",
-			"name": "Soft"
+			"id": "square",
+			"name": "Square"
 		}
 	],
 	"skins": [
 		{
-			"id": "skin_1",
+			"id": "porcelain",
 			"name": "Porcelain",
-			"color": "#f6dccb"
+			"color": "#f7d9c2"
 		},
 		{
-			"id": "skin_2",
+			"id": "fair",
 			"name": "Fair",
-			"color": "#ecc3a5"
+			"color": "#edc29e"
 		},
 		{
-			"id": "skin_3",
+			"id": "olive",
 			"name": "Olive",
-			"color": "#c9a07a"
+			"color": "#cc9e73"
 		},
 		{
-			"id": "skin_4",
+			"id": "tan",
 			"name": "Tan",
-			"color": "#b07b52"
+			"color": "#b28057"
 		},
 		{
-			"id": "skin_5",
+			"id": "brown",
 			"name": "Brown",
-			"color": "#8a5a3b"
+			"color": "#855738"
 		},
 		{
-			"id": "skin_6",
+			"id": "deep",
 			"name": "Deep",
-			"color": "#5c3a26"
+			"color": "#543624"
 		}
 	],
 	"hair_styles": [
 		{
-			"id": "cropped",
-			"name": "Cropped",
-			"bodies": [
-				"boy",
-				"girl"
-			]
+			"id": "short",
+			"name": "Short"
 		},
 		{
 			"id": "tousled",
-			"name": "Tousled",
-			"bodies": [
-				"boy",
-				"girl"
-			]
+			"name": "Tousled"
 		},
 		{
-			"id": "long_and_loose",
-			"name": "Long and loose",
-			"bodies": [
-				"boy",
-				"girl"
-			]
+			"id": "long",
+			"name": "Long"
 		},
 		{
 			"id": "braid",
-			"name": "Braid",
-			"bodies": [
-				"girl",
-				"boy"
-			]
+			"name": "Braid"
 		},
 		{
-			"id": "bun",
-			"name": "Bun",
-			"bodies": [
-				"girl"
-			]
+			"id": "topknot",
+			"name": "Topknot"
 		},
 		{
-			"id": "shaved_sides",
-			"name": "Shaved sides",
-			"bodies": [
-				"boy"
-			]
-		},
-		{
-			"id": "wild_curls",
-			"name": "Wild curls",
-			"bodies": [
-				"boy",
-				"girl"
-			]
+			"id": "shaved",
+			"name": "Shaved"
 		}
 	],
 	"hair_colors": [
 		{
 			"id": "black",
 			"name": "Black",
-			"color": "#1c1714"
+			"color": "#141212"
 		},
 		{
 			"id": "brown",
 			"name": "Brown",
-			"color": "#5a3a24"
+			"color": "#54331c"
 		},
 		{
 			"id": "auburn",
 			"name": "Auburn",
-			"color": "#8a3b1e"
-		},
-		{
-			"id": "copper",
-			"name": "Copper",
-			"color": "#b5602a"
+			"color": "#8c381a"
 		},
 		{
 			"id": "blond",
 			"name": "Blond",
-			"color": "#d8b56a"
+			"color": "#dbb266"
 		},
 		{
 			"id": "ash",
 			"name": "Ash",
-			"color": "#9a948c"
+			"color": "#b2ada3"
 		},
 		{
-			"id": "white",
-			"name": "White",
-			"color": "#e8e4dc"
+			"id": "ember",
+			"name": "Ember",
+			"color": "#d9521f"
 		}
 	],
 	"eyes": [
 		{
 			"id": "brown",
 			"name": "Brown",
-			"color": "#5b3a1f"
+			"color": "#613b1f"
 		},
 		{
 			"id": "hazel",
 			"name": "Hazel",
-			"color": "#8a6a2f"
+			"color": "#806b33"
 		},
 		{
 			"id": "green",
 			"name": "Green",
-			"color": "#3f7a4a"
+			"color": "#408c4c"
 		},
 		{
 			"id": "blue",
 			"name": "Blue",
-			"color": "#3f6fa8"
+			"color": "#407acc"
 		},
 		{
 			"id": "grey",
 			"name": "Grey",
-			"color": "#7d8790"
+			"color": "#8c949e"
 		},
 		{
-			"id": "amber",
-			"name": "Amber",
-			"color": "#c08a2a"
+			"id": "violet",
+			"name": "Violet",
+			"color": "#8c59cc"
 		}
 	],
 	"builds": [
 		{
 			"id": "slight",
-			"name": "Slight",
-			"scale": [
-				0.92,
-				0.97,
-				0.92
-			]
+			"name": "Slight"
 		},
 		{
 			"id": "average",
-			"name": "Average",
-			"scale": [
-				1.0,
-				1.0,
-				1.0
-			]
+			"name": "Average"
 		},
 		{
 			"id": "sturdy",
-			"name": "Sturdy",
-			"scale": [
-				1.1,
-				1.0,
-				1.08
-			]
+			"name": "Sturdy"
 		}
 	]
 }

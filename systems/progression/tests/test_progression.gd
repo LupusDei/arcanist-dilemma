@@ -208,9 +208,8 @@ func _test_spell_growth() -> void:
 func _test_appearance() -> void:
 	var a := CharacterAppearance.create_default("girl")
 	_check(a.validate().is_empty(), "default girl appearance is valid (%s)" % [a.validate()])
-	_check(a.set_option("hair_style", "bun"), "girl can pick a bun")
-	_check(not a.set_option("hair_style", "shaved_sides"), "body-specific hair is enforced")
-	_check(a.set_option("body", "boy") and a.hair_style != "bun", "switching body fixes an invalid hair style")
+	_check(a.set_option("hair_style", "topknot"), "pick a topknot")
+	_check(a.set_option("body", "boy") and a.hair_style == "topknot", "switching body keeps a shared hair style")
 	_check(not a.set_option("skin", "skin_99"), "unknown preset refused")
 	_check(not a.set_character_name("   "), "blank name refused")
 	_check(not a.set_character_name("A name much too long to fit"), "overlong name refused")
@@ -224,6 +223,12 @@ func _test_appearance() -> void:
 	for i in 50:
 		all_valid = all_valid and CharacterAppearance.create_random(rng).validate().is_empty()
 	_check(all_valid, "random appearances are always valid")
+	var ui := {"name": "Wren", "sex": 1, "face": 2, "skin": 5, "hair": 4, "hair_color": 5, "eyes": 5, "build": 2}
+	var from_ui := CharacterAppearance.from_ui_dict(ui)
+	_check(from_ui.body == "girl" and from_ui.face == "heart" and from_ui.hair_style == "topknot" and from_ui.build == "sturdy",
+			"creation screen indices map onto preset ids")
+	_check(from_ui.to_ui_dict() == ui, "UI dictionary round-trips")
+	_check(CharacterAppearance.from_ui_dict({"sex": 9, "face": 99}).validate().is_empty(), "out-of-range UI indices are clamped")
 	var bad := CharacterAppearance.from_dict({"body": "dragon", "name": "", "skin": "nope"})
 	_check(bad.validate().is_empty(), "garbage save data falls back to a valid look")
 
@@ -232,7 +237,7 @@ func _test_save_and_load() -> void:
 	var path := "user://test_saves/slot_test.json"
 	var a := CharacterAppearance.create_default("girl")
 	a.set_character_name("Maren")
-	a.set_option("eyes", "amber")
+	a.set_option("eyes", "violet")
 	var p := CharacterProgression.new()
 	p.set_level(12)
 	p.add_xp(300)
@@ -292,6 +297,29 @@ func _test_service() -> void:
 		found = found or (s["slot"] == 9 and s["name"] == "Aren" and s["level"] == 2)
 	_check(found, "slot list summarizes the save")
 	_check(not service.load_game(8), "missing slot fails cleanly")
+
+	# UI contract (ui/README.md)
+	_check(service.is_in_group("progression"), "service is in the progression group")
+	var st: Dictionary = service.get_stats()
+	_check(st["name"] == "Aren" and st["level"] == 2 and st["path"] == "arcanist" and st["unspent_attribute_points"] == 5,
+			"get_stats reports name, level, path and points")
+	_check(st["attributes"][&"strength"] == 10 and st["talent_tree"]["rows"].is_empty(), "get_stats attributes and empty tree")
+	_check(service.allocate_attributes({&"intelligence": 3, &"dexterity": 2}) and service.get_stats()["unspent_attribute_points"] == 0,
+			"allocate_attributes spends staged points")
+	service.progression.set_level(14)
+	service.progression.choose_path("mage")
+	service.progression.choose_specialization("chronos")
+	st = service.get_stats()
+	_check(st["talent_tree"]["name"] == "Chronos" and st["talent_tree"]["rows"].size() == 6, "Chronos tree has six rows")
+	_check(st["talent_tree"]["rows"][0]["options"][0]["text"].begins_with("20% chance"), "options carry name and text")
+	_check(st["talent_choices"] == [-1, -1, -1, -1, -1, -1] and st["unspent_spell_points"] == 5, "no picks yet; Insight shows as spell points")
+	_check(service.choose_talent(1, 2) and service.get_stats()["talent_choices"][1] == 2, "choose_talent by row and option index")
+	_check(service.choose_talent(1, 0) and service.progression.has_talent("rewind"), "a filled row can be swapped")
+	_check(not service.choose_talent(3, 0), "locked row refused")
+	_check(not service.choose_talent(0, 7), "bad option refused")
+	service.new_character_from_ui({"name": "Lyra", "sex": 1, "face": 1})
+	_check(service.appearance.character_name == "Lyra" and service.appearance.body == "girl" and service.progression.level == 1,
+			"new_character_from_ui starts a fresh character")
 	ProgressionSave.delete_slot(9)
 	service.queue_free()
 
