@@ -240,7 +240,9 @@ func combat_stats() -> Resource:
 	var script := _combat_stats_script()
 	if script == null or not script.has_method("from_attributes"):
 		return null
-	return script.from_attributes(path, get_attribute(&"strength"), get_attribute(&"vitality"),
+	# CombatStats.Path is an enum: NONE, WIZARD, MAGE, SORCERER.
+	var path_index: int = ["", "wizard", "mage", "sorcerer"].find(path)
+	return script.from_attributes(maxi(path_index, 0), get_attribute(&"strength"), get_attribute(&"vitality"),
 			get_attribute(&"dexterity"), get_attribute(&"intelligence"), get_attribute(&"wisdom"))
 
 

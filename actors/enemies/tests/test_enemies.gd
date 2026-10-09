@@ -422,11 +422,15 @@ func _world(player_position: Vector3) -> Dictionary:
 	var player: Player = PLAYER_SCENE.instantiate()
 	player.position = player_position + Vector3.UP * 0.1
 	world.add_child(player)
-	var health := EnemyHealth.new()
-	health.name = EnemyDamage.HEALTH_NODE
+	# The player scene carries combat's HealthComponent; older setups get the stand-in.
+	var health: Node = EnemyDamage.find_health(player)
+	if health == null:
+		health = EnemyHealth.new()
+		health.name = EnemyDamage.HEALTH_NODE
+		player.add_child(health)
 	health.max_health = 150.0
 	health.team = &"player"
-	player.add_child(health)
+	health.reset()
 	await _frames(2)
 	return {"root": world, "player": player}
 
@@ -445,7 +449,8 @@ func _free(w: Dictionary) -> void:
 
 
 func _hp(body: Node) -> float:
-	return EnemyDamage.find_health(body).current_health
+	var health: Node = EnemyDamage.find_health(body)
+	return health.current_health if health is EnemyHealth else health.health
 
 
 func _record_states(enemy: Enemy) -> Dictionary:

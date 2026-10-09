@@ -5,7 +5,8 @@
 [ext_resource type="Script" path="res://scenes/world/vegetation.gd" id="3_vegetation"]
 [ext_resource type="Script" path="res://scenes/world/landmarks.gd" id="4_landmarks"]
 [ext_resource type="PackedScene" path="res://scenes/player/player.tscn" id="5_player"]
-[ext_resource type="PackedScene" path="res://scenes/ui/hud.tscn" id="6_hud"]
+[ext_resource type="PackedScene" path="res://ui/game_ui.tscn" id="6_game_ui"]
+[ext_resource type="Script" path="res://scenes/world/game_session.gd" id="9_session"]
 [ext_resource type="Script" path="res://scenes/world/village_site.gd" id="7_village"]
 [ext_resource type="Resource" path="res://systems/procgen/village/recipes/millbrook.tres" id="8_millbrook"]
 
@@ -63,4 +64,8 @@ script = ExtResource("4_landmarks")
 [node name="Player" parent="." instance=ExtResource("5_player")]
 position = Vector3(0, 3.5, 6)
 
-[node name="HUD" parent="." instance=ExtResource("6_hud")]
+[node name="GameSession" type="Node" parent="."]
+script = ExtResource("9_session")
+
+[node name="GameUI" parent="." instance=ExtResource("6_game_ui")]
+use_mock_when_missing = false

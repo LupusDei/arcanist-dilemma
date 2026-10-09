@@ -92,6 +92,17 @@ func set_stats(new_stats: CombatStats) -> void:
 	_rebuild_resource(true)
 
 
+## The bar as the HUD lays it out: left click (cantrip), right click (the main
+## spell in slot 6), then keys 1 to 6.
+var action_bar: Array:
+	get:
+		var bar := get_action_bar()
+		var layout: Array = [get_cantrip(), bar[6] if bar.size() > 6 else null]
+		for i in 6:
+			layout.append(bar[i] if i < bar.size() else null)
+		return layout
+
+
 func get_action_bar() -> Array[SpellData]:
 	return source.get_bar() if source else []
 

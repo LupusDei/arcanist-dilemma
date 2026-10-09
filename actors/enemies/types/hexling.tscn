@@ -1,7 +1,7 @@
 [gd_scene format=3]
 
 [ext_resource type="Script" path="res://actors/enemies/core/enemy.gd" id="1_enemy"]
-[ext_resource type="Script" path="res://actors/enemies/core/enemy_health.gd" id="2_health"]
+[ext_resource type="Script" path="res://systems/combat/health_component.gd" id="2_health"]
 [ext_resource type="Resource" path="res://actors/enemies/types/hexling.tres" id="3_data"]
 
 [sub_resource type="CapsuleShape3D" id="Shape_body"]

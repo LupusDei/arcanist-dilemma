@@ -4,7 +4,13 @@ A third-person action RPG about an arcanist and their journey through magic and 
 
 ![The meadow at spawn](docs/world-spawn.png)
 
-## Current state: the meadow
+## Playing the prototype
+
+The game boots to the main menu. New Game opens character creation, then drops you on the green in Millbrook. Monsters roam the meadow and the woods (levels 1 to 3) and guard the hilltop ruins (levels 3 to 5, more elites). You start with the three tricks (Spark, Nudge, Jolt); kills give XP, and at level 5 you choose wizard, mage or sorcerer and get that path's starting spells. Dying drops you back at Millbrook after a few seconds.
+
+`scenes/world/game_session.gd` is the only place that knows about every system: it feeds progression into the player's combat stats, swaps spells on the path choice, turns kills into XP and spawns the monsters. Combat, progression, enemies and the UI each have their own folder and README (`systems/combat/`, `systems/progression/`, `actors/enemies/`, `ui/`).
+
+## The meadow
 
 The main scene (`scenes/world/world.tscn`) is a procedurally generated stylized meadow, built from a fixed seed so it's the same every run:
 
@@ -57,8 +63,13 @@ Surfaces are textured procedurally in shaders (no image files): plank walls, shi
 | Look | Mouse | Right stick |
 | Jump (hold for higher) | Space | A |
 | Dodge (one in the air) | Shift | B |
+| Cast cantrip / main spell | Left / right click | X / Y |
+| Cast bar spells | 1 to 6 | |
+| Character sheet / talents | C / K | |
+| Choose your path (from level 5) | P | |
+| Pause | Esc | |
 | Reset to spawn | R | LB |
-| Free / recapture mouse | Esc / click | |
+| Grant 500 XP (prototype shortcut) | F8 | |
 
 ## Running
 
@@ -79,6 +90,12 @@ godot --headless --path . --script res://tests/smoke_test.gd
 ```bash
 godot --headless --path . --script res://tests/procgen_test.gd
 ```
+
+```bash
+godot --headless --path . --fixed-fps 60 --script res://tests/play_session_test.gd
+```
+
+Each system also has its own suite under its folder's `tests/`.
 
 ## Layout
 

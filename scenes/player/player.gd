@@ -6,6 +6,8 @@ extends CharacterBody3D
 ## CameraPivot yaws/pitches independently, so movement is always relative to the camera.
 
 signal dodged
+signal died
+signal respawned
 
 @export_group("Movement")
 @export var run_speed := 6.5
@@ -37,8 +39,10 @@ signal dodged
 
 @export_group("Safety")
 @export var kill_height := -20.0
+@export var respawn_delay := 3.0
 
 var is_dodging := false
+var is_dead := false
 ## Set during a dodge. Nothing reads it yet; combat will.
 var is_invulnerable := false
 var dodge_cooldown_remaining := 0.0
@@ -54,6 +58,9 @@ var _spawn_transform: Transform3D
 @onready var _model: Node3D = $Model
 @onready var _camera_pivot: Node3D = $CameraPivot
 @onready var _spring_arm: SpringArm3D = $CameraPivot/SpringArm3D
+## Combat parts are optional so the controller also works on its own.
+@onready var _health: Node = get_node_or_null(^"HealthComponent")
+@onready var _caster: Node = get_node_or_null(^"SpellCaster")
 
 
 func _ready() -> void:
@@ -62,6 +69,13 @@ func _ready() -> void:
 	_spring_arm.add_excluded_object(get_rid())
 	_camera_pivot.rotation.x = deg_to_rad(-15.0)
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+	if _health != null:
+		_health.knocked_back.connect(func(impulse: Vector3) -> void: velocity += impulse)
+		_health.died.connect(func(_killer: Node) -> void: _die())
+	if _caster != null:
+		# Turn to face where the spell is going.
+		_caster.cast_started.connect(func(_spell: Resource, _time: float) -> void: _face_camera())
+		_caster.spell_cast.connect(func(_spell: Resource) -> void: _face_camera())
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -78,6 +92,12 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _physics_process(delta: float) -> void:
 	_rotate_camera_with_stick(delta)
+	if is_dead:
+		velocity.x = 0.0
+		velocity.z = 0.0
+		_apply_gravity(delta)
+		move_and_slide()
+		return
 	_tick_timers(delta)
 
 	if is_on_floor():
@@ -86,7 +106,7 @@ func _physics_process(delta: float) -> void:
 
 	var wish_direction := _get_wish_direction()
 
-	if Input.is_action_just_pressed("dodge"):
+	if Input.is_action_just_pressed("dodge") and not _is_held():
 		_try_start_dodge(wish_direction)
 
 	if is_dodging:
@@ -108,6 +128,32 @@ func respawn() -> void:
 	velocity = Vector3.ZERO
 	_end_dodge()
 	dodge_cooldown_remaining = 0.0
+	if is_dead:
+		is_dead = false
+		_model.rotation.x = 0.0
+		if _health != null:
+			_health.revive()
+		respawned.emit()
+
+
+func _die() -> void:
+	if is_dead:
+		return
+	is_dead = true
+	_end_dodge()
+	_model.rotation.x = -PI / 2.0  # topple over
+	died.emit()
+	await get_tree().create_timer(respawn_delay).timeout
+	respawn()
+
+
+func _face_camera() -> void:
+	_model.rotation.y = _camera_pivot.global_rotation.y
+
+
+## Stunned or rooted: no dodging out of it.
+func _is_held() -> bool:
+	return _health != null and _health.get_move_speed_multiplier() <= 0.0
 
 
 func _tick_timers(delta: float) -> void:
@@ -144,6 +190,8 @@ func _process_jump() -> void:
 
 func _process_run(wish_direction: Vector3, delta: float) -> void:
 	var target := wish_direction * run_speed
+	if _health != null:
+		target *= _health.get_move_speed_multiplier()
 	var horizontal := Vector3(velocity.x, 0.0, velocity.z)
 	var rate := air_acceleration
 	if is_on_floor():

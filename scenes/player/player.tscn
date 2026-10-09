@@ -1,6 +1,9 @@
 [gd_scene format=3]
 
 [ext_resource type="Script" path="res://scenes/player/player.gd" id="1_player"]
+[ext_resource type="Script" path="res://systems/combat/health_component.gd" id="2_health"]
+[ext_resource type="Script" path="res://systems/combat/spell_caster.gd" id="3_caster"]
+[ext_resource type="Script" path="res://systems/combat/input/player_combat_input.gd" id="4_combat_input"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_body"]
 radius = 0.35
@@ -102,3 +105,16 @@ margin = 0.1
 [node name="Camera3D" type="Camera3D" parent="CameraPivot/SpringArm3D"]
 current = true
 fov = 70.0
+
+[node name="HealthComponent" type="Node" parent="."]
+script = ExtResource("2_health")
+team = &"player"
+center_height = 1.0
+hit_radius = 0.45
+
+[node name="SpellCaster" type="Node3D" parent="."]
+script = ExtResource("3_caster")
+position = Vector3(0, 1.2, 0)
+
+[node name="PlayerCombatInput" type="Node" parent="."]
+script = ExtResource("4_combat_input")

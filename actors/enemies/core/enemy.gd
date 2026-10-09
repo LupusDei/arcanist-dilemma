@@ -425,7 +425,12 @@ func _is_valid_target(node: Node3D) -> bool:
 	if node == null or not is_instance_valid(node) or not node.is_inside_tree():
 		return false
 	var target_health := EnemyDamage.find_health(node)
-	return not (target_health != null and target_health.has_method("is_dead") and target_health.is_dead())
+	if target_health == null:
+		return true
+	# EnemyHealth has is_dead(); combat's HealthComponent has an is_dead property.
+	if target_health.has_method("is_dead"):
+		return not target_health.is_dead()
+	return not target_health.get("is_dead")
 
 
 func _is_stunned() -> bool:

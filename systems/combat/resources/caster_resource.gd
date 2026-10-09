@@ -9,6 +9,10 @@ var current := 0.0
 var maximum := 100.0
 ## Multiplier on regeneration (Wisdom).
 var regen_multiplier := 1.0
+## Lowercase name ("arcana", "mana", "strain") the UI uses to pick colours.
+var resource_name: StringName:
+	get:
+		return StringName(get_display_name().to_lower())
 
 
 func get_display_name() -> String:

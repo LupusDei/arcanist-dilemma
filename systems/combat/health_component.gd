@@ -196,6 +196,11 @@ func revive() -> void:
 	health_changed.emit(health, max_health)
 
 
+## Same as revive(); the name enemies call when they return home or respawn.
+func reset() -> void:
+	revive()
+
+
 ## The point spells aim at and measure distance from.
 func get_target_position() -> Vector3:
 	var body := get_parent() as Node3D

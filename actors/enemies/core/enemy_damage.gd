@@ -38,7 +38,7 @@ static func apply(target: Node, amount: float, source: Node) -> bool:
 	var health := find_health(target)
 	if health == null or not health.has_method("take_damage"):
 		return false
-	if health.has_method("is_dead") and health.is_dead():
+	if (health.has_method("is_dead") and health.is_dead()) or health.get("is_dead") == true:
 		return false
 	var attacker_health := find_health(source)
 	if attacker_health != null and attacker_health.get("team") == health.get("team"):
