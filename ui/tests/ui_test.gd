@@ -242,6 +242,7 @@ func _test_preview_loads() -> void:
 func _make_ui() -> GameUI:
 	paused = false
 	var ui: GameUI = load("res://ui/game_ui.tscn").instantiate()
+	ui.force_mock = true
 	root.add_child(ui)
 	return ui
 

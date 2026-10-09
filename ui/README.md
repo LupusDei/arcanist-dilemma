@@ -44,7 +44,7 @@ Add `res://ui/game_ui.tscn` to the game scene once. It finds its data in this or
 1. The three node paths on `GameUI`: `health_source_path`, `caster_source_path`, `progression_source_path`.
 2. Otherwise, under the node in the `player` group: the first node with a `health_changed` signal (combat's HealthComponent), and the first with a `spell_cast` signal (combat's SpellCaster).
 3. For progression, the first node in the `progression` group, or a node under the player with a `get_stats()` method.
-4. Any role still missing is filled by `UiMockPlayer`, so the UI never breaks while the systems are being built. Set `use_mock_when_missing` to false once all three exist.
+4. Any role still missing is filled by `UiMockPlayer`, so the UI never breaks while the systems are being built. Set `use_mock_when_missing` to false once all three exist. `force_mock` binds only the mock, which the tests and preview use so a real Progression autoload does not change their numbers.
 
 The UI never imports combat or progression classes. It reads fields by name and only connects the signals a source actually has (`data/ui_bind.gd`), so the real nodes can drop in as they are.
 

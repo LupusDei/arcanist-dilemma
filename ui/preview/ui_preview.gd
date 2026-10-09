@@ -39,6 +39,7 @@ func _ready() -> void:
 	_game_view.add_child(backdrop)
 
 	game_ui = load("res://ui/game_ui.tscn").instantiate()
+	game_ui.force_mock = true
 	add_child(game_ui)
 	game_ui.mock.regen_enabled = true
 

@@ -15,6 +15,8 @@ extends CanvasLayer
 @export var caster_source_path: NodePath
 @export var progression_source_path: NodePath
 @export var use_mock_when_missing := true
+## Ignore the real systems and bind everything to the mock (tests, preview).
+@export var force_mock := false
 
 var hud: GameHud
 var character_sheet: CharacterSheet
@@ -73,6 +75,12 @@ func bind_sources(health: Object, caster: Object, progression: Object) -> void:
 
 
 func _resolve_sources() -> void:
+	if force_mock:
+		health_source = null
+		caster_source = null
+		progression_source = null
+		_add_mock()
+		return
 	health_source = get_node_or_null(health_source_path) if not health_source_path.is_empty() else null
 	caster_source = get_node_or_null(caster_source_path) if not caster_source_path.is_empty() else null
 	progression_source = get_node_or_null(progression_source_path) if not progression_source_path.is_empty() else null
@@ -88,6 +96,10 @@ func _resolve_sources() -> void:
 			progression_source = _find_with_method(player, &"get_stats")
 	if not use_mock_when_missing or (health_source and caster_source and progression_source):
 		return
+	_add_mock()
+
+
+func _add_mock() -> void:
 	mock = UiMockPlayer.new()
 	mock.name = "MockPlayer"
 	mock.process_mode = Node.PROCESS_MODE_PAUSABLE
