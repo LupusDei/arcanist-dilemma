@@ -51,6 +51,8 @@ Signals on the autoload: `xp_gained`, `leveled_up`, `stats_changed`, `attribute_
 
 `combat_stats()` calls `CombatStats.from_attributes(path, str, vit, dex, int, wis)` from `res://systems/combat/` and returns null until that class exists. Progression itself only computes health, since that depends on level.
 
+The autoload also meets the UI's contract (`ui/README.md`): it joins the `progression` group and offers `get_stats()`, `allocate_attributes(points)` and `choose_talent(row, choice)`. `Progression.new_character_from_ui(UiSession.character)` starts a game from the creation screen; `appearance.to_ui_dict()` goes the other way after a load. The appearance preset lists match `ui/data/ui_character_presets.gd` entry for entry.
+
 New games and loads change the same objects in place, so a listener connected once stays connected.
 
 Other systems can save alongside the character: `Progression.save_game(slot, {"inventory": {...}})`, and read their part back from `Progression.loaded_extra` after `character_loaded`.
