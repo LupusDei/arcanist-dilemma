@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="SpellData" format=3]
+
+[ext_resource type="Script" path="res://systems/combat/effects/spell_effect.gd" id="1_sq0vu"]
+[ext_resource type="Script" path="res://systems/combat/effects/damage_effect.gd" id="2_6r1pq"]
+[ext_resource type="Script" path="res://systems/combat/effects/knockback_effect.gd" id="3_lno4o"]
+[ext_resource type="Script" path="res://systems/combat/spells/spell_data.gd" id="4_0ip3g"]
+
+[sub_resource type="Resource" id="Resource_u4iv7"]
+script = ExtResource("2_6r1pq")
+amount = 4.0
+
+[sub_resource type="Resource" id="Resource_1p7ws"]
+script = ExtResource("3_lno4o")
+force = 9.0
+
+[resource]
+script = ExtResource("4_0ip3g")
+id = &"nudge"
+display_name = "Nudge"
+description = "A telekinetic shove that knocks nearby enemies back."
+damage_type = 4
+cost = 8.0
+cooldown = 2.0
+delivery = 4
+radius = 4.0
+cone_angle = 80.0
+effects = Array[ExtResource("1_sq0vu")]([SubResource("Resource_u4iv7"), SubResource("Resource_1p7ws")])

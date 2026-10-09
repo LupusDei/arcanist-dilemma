@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="SpellData" format=3]
+
+[ext_resource type="Script" path="res://systems/combat/effects/spell_effect.gd" id="1_vp5up"]
+[ext_resource type="Script" path="res://systems/combat/effects/ward_effect.gd" id="2_6gh8g"]
+[ext_resource type="Script" path="res://systems/combat/spells/spell_data.gd" id="3_lg8nf"]
+
+[sub_resource type="Resource" id="Resource_d6a0r"]
+script = ExtResource("2_6gh8g")
+amount = 50.0
+duration = 10.0
+
+[resource]
+script = ExtResource("3_lg8nf")
+id = &"barrier"
+display_name = "Barrier"
+description = "A kinetic shell that absorbs damage."
+path = 3
+damage_type = 4
+cost = 20.0
+cooldown = 15.0
+delivery = 5
+effects = Array[ExtResource("1_vp5up")]([SubResource("Resource_d6a0r")])
+tree_branch = &"force"
+tree_row = 1
+synergy_id = &"shove"

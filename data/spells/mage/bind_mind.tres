@@ -1,0 +1,31 @@
+[gd_resource type="Resource" script_class="SpellData" format=3]
+
+[ext_resource type="Script" path="res://systems/combat/effects/spell_effect.gd" id="1_d5qtt"]
+[ext_resource type="Script" path="res://systems/combat/effects/damage_effect.gd" id="2_0ov2j"]
+[ext_resource type="Script" path="res://systems/combat/effects/status_effect.gd" id="3_al6kb"]
+[ext_resource type="Script" path="res://systems/combat/spells/spell_data.gd" id="4_2sxc3"]
+
+[sub_resource type="Resource" id="Resource_fkwt1"]
+script = ExtResource("2_0ov2j")
+amount = 2.0
+
+[sub_resource type="Resource" id="Resource_7sujs"]
+script = ExtResource("3_al6kb")
+kind = 4
+duration = 4.0
+
+[resource]
+script = ExtResource("4_2sxc3")
+id = &"bind_mind"
+display_name = "Bind Mind"
+description = "Charms an enemy for a few seconds."
+path = 2
+damage_type = 6
+cost = 20.0
+cast_time = 1.0
+cooldown = 10.0
+cast_range = 15.0
+delivery = 1
+effects = Array[ExtResource("1_d5qtt")]([SubResource("Resource_fkwt1"), SubResource("Resource_7sujs")])
+verb = &"bind"
+noun = &"mind"

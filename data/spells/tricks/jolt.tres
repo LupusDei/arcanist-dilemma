@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="SpellData" format=3]
+
+[ext_resource type="Script" path="res://systems/combat/effects/spell_effect.gd" id="1_s1am4"]
+[ext_resource type="Script" path="res://systems/combat/effects/damage_effect.gd" id="2_g6b0a"]
+[ext_resource type="Script" path="res://systems/combat/effects/status_effect.gd" id="3_5tip6"]
+[ext_resource type="Script" path="res://systems/combat/spells/spell_data.gd" id="4_8ab1v"]
+
+[sub_resource type="Resource" id="Resource_nssiq"]
+script = ExtResource("2_g6b0a")
+amount = 3.0
+
+[sub_resource type="Resource" id="Resource_yqbsn"]
+script = ExtResource("3_5tip6")
+duration = 1.5
+
+[resource]
+script = ExtResource("4_8ab1v")
+id = &"jolt"
+display_name = "Jolt"
+description = "A short shock that stuns one enemy."
+damage_type = 3
+cost = 10.0
+cooldown = 6.0
+cast_range = 12.0
+delivery = 1
+effects = Array[ExtResource("1_s1am4")]([SubResource("Resource_nssiq"), SubResource("Resource_yqbsn")])

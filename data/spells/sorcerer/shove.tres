@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="SpellData" format=3]
+
+[ext_resource type="Script" path="res://systems/combat/effects/spell_effect.gd" id="1_ey37d"]
+[ext_resource type="Script" path="res://systems/combat/effects/damage_effect.gd" id="2_l4dig"]
+[ext_resource type="Script" path="res://systems/combat/effects/knockback_effect.gd" id="3_nrsd0"]
+[ext_resource type="Script" path="res://systems/combat/spells/spell_data.gd" id="4_6du7i"]
+
+[sub_resource type="Resource" id="Resource_4c7cs"]
+script = ExtResource("2_l4dig")
+amount = 8.0
+
+[sub_resource type="Resource" id="Resource_0dq7f"]
+script = ExtResource("3_nrsd0")
+force = 12.0
+
+[resource]
+script = ExtResource("4_6du7i")
+id = &"shove"
+display_name = "Shove"
+description = "A wave of force that hurls enemies back."
+path = 3
+damage_type = 4
+cost = 10.0
+cooldown = 2.0
+delivery = 4
+radius = 4.5
+cone_angle = 90.0
+effects = Array[ExtResource("1_ey37d")]([SubResource("Resource_4c7cs"), SubResource("Resource_0dq7f")])
+tree_branch = &"force"
+synergy_id = &"barrier"

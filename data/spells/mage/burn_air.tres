@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="SpellData" format=3]
+
+[ext_resource type="Script" path="res://systems/combat/effects/spell_effect.gd" id="1_qrkwn"]
+[ext_resource type="Script" path="res://systems/combat/effects/damage_effect.gd" id="2_cmyl5"]
+[ext_resource type="Script" path="res://systems/combat/effects/status_effect.gd" id="3_vdg4g"]
+[ext_resource type="Script" path="res://systems/combat/spells/spell_data.gd" id="4_s2qie"]
+
+[sub_resource type="Resource" id="Resource_08ycx"]
+script = ExtResource("2_cmyl5")
+
+[sub_resource type="Resource" id="Resource_je3is"]
+script = ExtResource("3_vdg4g")
+kind = 3
+duration = 2.0
+magnitude = 3.0
+scales_with_power = true
+
+[resource]
+script = ExtResource("4_s2qie")
+id = &"burn_air"
+display_name = "Burn Air"
+description = "A jet of flame that sets enemies alight."
+path = 2
+damage_type = 1
+cost = 10.0
+cast_time = 0.5
+cooldown = 0.8
+delivery = 4
+radius = 6.0
+cone_angle = 50.0
+effects = Array[ExtResource("1_qrkwn")]([SubResource("Resource_08ycx"), SubResource("Resource_je3is")])
+verb = &"burn"
+noun = &"air"

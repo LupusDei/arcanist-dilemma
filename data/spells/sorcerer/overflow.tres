@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="SpellData" format=3]
+
+[ext_resource type="Script" path="res://systems/combat/effects/spell_effect.gd" id="1_kuvgj"]
+[ext_resource type="Script" path="res://systems/combat/effects/status_effect.gd" id="2_ltptr"]
+[ext_resource type="Script" path="res://systems/combat/spells/spell_data.gd" id="3_nhiv8"]
+
+[sub_resource type="Resource" id="Resource_1rpye"]
+script = ExtResource("2_ltptr")
+kind = 6
+duration = 5.0
+magnitude = 0.3
+
+[resource]
+script = ExtResource("3_nhiv8")
+id = &"overflow"
+display_name = "Overflow"
+description = "Let the power run over: move faster for 5 seconds at a steep strain cost."
+path = 3
+cost = 25.0
+cooldown = 12.0
+delivery = 5
+effects = Array[ExtResource("1_kuvgj")]([SubResource("Resource_1rpye")])
+tree_branch = &"surge"
+tree_row = 1
+synergy_id = &"flare"
