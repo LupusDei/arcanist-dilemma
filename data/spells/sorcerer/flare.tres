@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="SpellData" format=3]
+
+[ext_resource type="Script" path="res://systems/combat/effects/spell_effect.gd" id="1_8hwmi"]
+[ext_resource type="Script" path="res://systems/combat/effects/damage_effect.gd" id="2_x3fav"]
+[ext_resource type="Script" path="res://systems/combat/effects/status_effect.gd" id="3_j3kw7"]
+[ext_resource type="Script" path="res://systems/combat/spells/spell_data.gd" id="4_rrjlc"]
+
+[sub_resource type="Resource" id="Resource_fu60j"]
+script = ExtResource("2_x3fav")
+amount = 16.0
+
+[sub_resource type="Resource" id="Resource_7ldxg"]
+script = ExtResource("3_j3kw7")
+kind = 3
+duration = 2.0
+magnitude = 4.0
+scales_with_power = true
+
+[resource]
+script = ExtResource("4_rrjlc")
+id = &"flare"
+display_name = "Flare"
+description = "Raw power bursts into flame where you point."
+path = 3
+damage_type = 1
+cost = 12.0
+cast_time = 0.2
+cast_range = 16.0
+delivery = 2
+radius = 2.0
+effects = Array[ExtResource("1_8hwmi")]([SubResource("Resource_fu60j"), SubResource("Resource_7ldxg")])
+tree_branch = &"surge"
+synergy_id = &"overflow"

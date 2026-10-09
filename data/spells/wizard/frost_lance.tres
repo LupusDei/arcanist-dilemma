@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="SpellData" format=3]
+
+[ext_resource type="Script" path="res://systems/combat/effects/spell_effect.gd" id="1_jppki"]
+[ext_resource type="Script" path="res://systems/combat/effects/damage_effect.gd" id="2_5nhcf"]
+[ext_resource type="Script" path="res://systems/combat/effects/status_effect.gd" id="3_xlbmd"]
+[ext_resource type="Script" path="res://systems/combat/spells/spell_data.gd" id="4_mg6nw"]
+
+[sub_resource type="Resource" id="Resource_v8fwx"]
+script = ExtResource("2_5nhcf")
+amount = 22.0
+
+[sub_resource type="Resource" id="Resource_pftnj"]
+script = ExtResource("3_xlbmd")
+kind = 1
+duration = 3.0
+magnitude = 0.4
+
+[resource]
+script = ExtResource("4_mg6nw")
+id = &"frost_lance"
+display_name = "Frost Lance"
+description = "A spear of ice that pierces two enemies and slows them."
+path = 1
+damage_type = 2
+cost = 18.0
+cast_time = 1.5
+cast_range = 25.0
+projectile_speed = 24.0
+pierce = 2
+effects = Array[ExtResource("1_jppki")]([SubResource("Resource_v8fwx"), SubResource("Resource_pftnj")])

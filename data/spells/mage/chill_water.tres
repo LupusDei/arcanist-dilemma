@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="SpellData" format=3]
+
+[ext_resource type="Script" path="res://systems/combat/effects/spell_effect.gd" id="1_u2yf3"]
+[ext_resource type="Script" path="res://systems/combat/effects/damage_effect.gd" id="2_j7d7j"]
+[ext_resource type="Script" path="res://systems/combat/effects/status_effect.gd" id="3_pme7x"]
+[ext_resource type="Script" path="res://systems/combat/spells/spell_data.gd" id="4_4q6lg"]
+
+[sub_resource type="Resource" id="Resource_htbhw"]
+script = ExtResource("2_j7d7j")
+amount = 14.0
+
+[sub_resource type="Resource" id="Resource_2x84n"]
+script = ExtResource("3_pme7x")
+kind = 1
+duration = 3.0
+magnitude = 0.5
+
+[resource]
+script = ExtResource("4_4q6lg")
+id = &"chill_water"
+display_name = "Chill Water"
+description = "Freezes the ground at a point, slowing everything caught in it."
+path = 2
+damage_type = 2
+cost = 16.0
+cast_time = 1.0
+cooldown = 2.0
+cast_range = 18.0
+delivery = 2
+radius = 3.0
+effects = Array[ExtResource("1_u2yf3")]([SubResource("Resource_htbhw"), SubResource("Resource_2x84n")])
+verb = &"chill"
+noun = &"water"

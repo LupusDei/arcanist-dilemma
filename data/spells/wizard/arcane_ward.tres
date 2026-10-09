@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="SpellData" format=3]
+
+[ext_resource type="Script" path="res://systems/combat/effects/spell_effect.gd" id="1_2ltye"]
+[ext_resource type="Script" path="res://systems/combat/effects/ward_effect.gd" id="2_giib1"]
+[ext_resource type="Script" path="res://systems/combat/spells/spell_data.gd" id="3_bfjd2"]
+
+[sub_resource type="Resource" id="Resource_gj050"]
+script = ExtResource("2_giib1")
+amount = 60.0
+duration = 10.0
+
+[resource]
+script = ExtResource("3_bfjd2")
+id = &"arcane_ward"
+display_name = "Arcane Ward"
+description = "A shell of arcana that absorbs damage for 10 seconds."
+path = 1
+cost = 30.0
+cast_time = 1.5
+cooldown = 12.0
+delivery = 5
+effects = Array[ExtResource("1_2ltye")]([SubResource("Resource_gj050")])

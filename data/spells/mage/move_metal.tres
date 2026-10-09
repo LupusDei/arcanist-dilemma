@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="SpellData" format=3]
+
+[ext_resource type="Script" path="res://systems/combat/effects/spell_effect.gd" id="1_37q7x"]
+[ext_resource type="Script" path="res://systems/combat/effects/damage_effect.gd" id="2_dq2wo"]
+[ext_resource type="Script" path="res://systems/combat/effects/knockback_effect.gd" id="3_cnjis"]
+[ext_resource type="Script" path="res://systems/combat/spells/spell_data.gd" id="4_3ktxt"]
+
+[sub_resource type="Resource" id="Resource_nc5bb"]
+script = ExtResource("2_dq2wo")
+
+[sub_resource type="Resource" id="Resource_xop7o"]
+script = ExtResource("3_cnjis")
+force = -7.0
+upward = 0.5
+from_caster = true
+
+[resource]
+script = ExtResource("4_3ktxt")
+id = &"move_metal"
+display_name = "Move Metal"
+description = "Yanks metal toward you: the spoon trick, grown up. Pulls the target in."
+path = 2
+damage_type = 4
+cost = 12.0
+cast_time = 0.6
+cooldown = 4.0
+projectile_speed = 24.0
+effects = Array[ExtResource("1_37q7x")]([SubResource("Resource_nc5bb"), SubResource("Resource_xop7o")])
+verb = &"move"
+noun = &"metal"

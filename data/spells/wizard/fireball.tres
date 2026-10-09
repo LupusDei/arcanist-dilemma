@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="SpellData" format=3]
+
+[ext_resource type="Script" path="res://systems/combat/effects/spell_effect.gd" id="1_5vrbx"]
+[ext_resource type="Script" path="res://systems/combat/effects/damage_effect.gd" id="2_v0jng"]
+[ext_resource type="Script" path="res://systems/combat/spells/spell_data.gd" id="3_no27b"]
+
+[sub_resource type="Resource" id="Resource_q13ul"]
+script = ExtResource("2_v0jng")
+amount = 30.0
+
+[resource]
+script = ExtResource("3_no27b")
+id = &"fireball"
+display_name = "Fireball"
+description = "A slow bolt that explodes in a small area."
+path = 1
+damage_type = 1
+cost = 25.0
+cast_time = 1.75
+cast_range = 25.0
+projectile_speed = 14.0
+radius = 2.5
+effects = Array[ExtResource("1_5vrbx")]([SubResource("Resource_q13ul")])

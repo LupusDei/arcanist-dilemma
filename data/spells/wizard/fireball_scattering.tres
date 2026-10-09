@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="SpellData" format=3]
+
+[ext_resource type="Script" path="res://systems/combat/effects/spell_effect.gd" id="1_trx01"]
+[ext_resource type="Script" path="res://systems/combat/effects/damage_effect.gd" id="2_dfter"]
+[ext_resource type="Script" path="res://systems/combat/spells/spell_data.gd" id="3_w03mg"]
+
+[sub_resource type="Resource" id="Resource_e0xmv"]
+script = ExtResource("2_dfter")
+amount = 30.0
+
+[resource]
+script = ExtResource("3_w03mg")
+id = &"fireball_scattering"
+display_name = "Scattering Fireball"
+description = "Fireball, third-circle variant: splits into 3 smaller blasts."
+path = 1
+damage_type = 1
+cost = 25.0
+cast_time = 1.75
+cast_range = 25.0
+projectile_speed = 14.0
+radius = 2.5
+scatter_count = 3
+effects = Array[ExtResource("1_trx01")]([SubResource("Resource_e0xmv")])
+variant_of = &"fireball"

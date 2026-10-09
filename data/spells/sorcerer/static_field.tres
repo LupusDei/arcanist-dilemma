@@ -1,0 +1,32 @@
+[gd_resource type="Resource" script_class="SpellData" format=3]
+
+[ext_resource type="Script" path="res://systems/combat/effects/spell_effect.gd" id="1_s888x"]
+[ext_resource type="Script" path="res://systems/combat/effects/damage_effect.gd" id="2_nk4fy"]
+[ext_resource type="Script" path="res://systems/combat/effects/status_effect.gd" id="3_70jgr"]
+[ext_resource type="Script" path="res://systems/combat/spells/spell_data.gd" id="4_i74mi"]
+
+[sub_resource type="Resource" id="Resource_pykjf"]
+script = ExtResource("2_nk4fy")
+amount = 8.0
+
+[sub_resource type="Resource" id="Resource_sayx7"]
+script = ExtResource("3_70jgr")
+kind = 1
+duration = 2.0
+magnitude = 0.2
+
+[resource]
+script = ExtResource("4_i74mi")
+id = &"static_field"
+display_name = "Static Field"
+description = "A crackling field around you that shocks and slows."
+path = 3
+damage_type = 3
+cost = 14.0
+cooldown = 3.0
+delivery = 3
+radius = 5.0
+effects = Array[ExtResource("1_s888x")]([SubResource("Resource_pykjf"), SubResource("Resource_sayx7")])
+tree_branch = &"storm"
+tree_row = 1
+synergy_id = &"spark_bolt"
