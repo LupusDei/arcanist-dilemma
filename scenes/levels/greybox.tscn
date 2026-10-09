@@ -1,0 +1,226 @@
+[gd_scene format=3]
+
+[ext_resource type="Shader" path="res://materials/greybox_grid.gdshader" id="1_grid"]
+
+[sub_resource type="ShaderMaterial" id="Mat_floor"]
+render_priority = 0
+shader = ExtResource("1_grid")
+shader_parameter/base_color = Color(0.52, 0.53, 0.58, 1)
+shader_parameter/line_color = Color(0.4, 0.41, 0.47, 1)
+
+[sub_resource type="ShaderMaterial" id="Mat_step"]
+render_priority = 0
+shader = ExtResource("1_grid")
+shader_parameter/base_color = Color(0.85, 0.55, 0.3, 1)
+shader_parameter/line_color = Color(0.65, 0.4, 0.2, 1)
+
+[sub_resource type="ShaderMaterial" id="Mat_platform"]
+render_priority = 0
+shader = ExtResource("1_grid")
+shader_parameter/base_color = Color(0.35, 0.55, 0.8, 1)
+shader_parameter/line_color = Color(0.25, 0.4, 0.62, 1)
+
+[sub_resource type="ShaderMaterial" id="Mat_wall"]
+render_priority = 0
+shader = ExtResource("1_grid")
+shader_parameter/base_color = Color(0.42, 0.42, 0.46, 1)
+shader_parameter/line_color = Color(0.32, 0.32, 0.36, 1)
+
+[sub_resource type="ShaderMaterial" id="Mat_pillar"]
+render_priority = 0
+shader = ExtResource("1_grid")
+shader_parameter/base_color = Color(0.6, 0.45, 0.7, 1)
+shader_parameter/line_color = Color(0.45, 0.32, 0.55, 1)
+
+[node name="Greybox" type="Node3D"]
+
+[node name="Geometry" type="CSGCombiner3D" parent="."]
+use_collision = true
+
+[node name="Floor" type="CSGBox3D" parent="Geometry"]
+position = Vector3(0, -0.5, 0)
+size = Vector3(80, 1, 80)
+material = SubResource("Mat_floor")
+
+[node name="Step1" type="CSGBox3D" parent="Geometry"]
+position = Vector3(-8, 0.25, -5)
+size = Vector3(3, 0.5, 3)
+material = SubResource("Mat_step")
+
+[node name="Step2" type="CSGBox3D" parent="Geometry"]
+position = Vector3(-8, 0.5, -9)
+size = Vector3(3, 1.0, 3)
+material = SubResource("Mat_step")
+
+[node name="Step3" type="CSGBox3D" parent="Geometry"]
+position = Vector3(-8, 0.75, -13)
+size = Vector3(3, 1.5, 3)
+material = SubResource("Mat_step")
+
+[node name="Step4" type="CSGBox3D" parent="Geometry"]
+position = Vector3(-8, 1.0, -17)
+size = Vector3(3, 2.0, 3)
+material = SubResource("Mat_step")
+
+[node name="Step5" type="CSGBox3D" parent="Geometry"]
+position = Vector3(-8, 1.25, -21)
+size = Vector3(3, 2.5, 3)
+material = SubResource("Mat_step")
+
+[node name="Ramp" type="CSGBox3D" parent="Geometry"]
+position = Vector3(8, 0.9, -1.0)
+rotation = Vector3(0.32, 0, 0)
+size = Vector3(4, 0.3, 6.6)
+material = SubResource("Mat_platform")
+
+[node name="PlatformA" type="CSGBox3D" parent="Geometry"]
+position = Vector3(8, 1, -6)
+size = Vector3(4, 2, 4)
+material = SubResource("Mat_platform")
+
+[node name="PlatformB" type="CSGBox3D" parent="Geometry"]
+position = Vector3(8, 1, -12)
+size = Vector3(4, 2, 4)
+material = SubResource("Mat_platform")
+
+[node name="PlatformC" type="CSGBox3D" parent="Geometry"]
+position = Vector3(8, 1, -19)
+size = Vector3(4, 2, 4)
+material = SubResource("Mat_platform")
+
+[node name="PlatformD" type="CSGBox3D" parent="Geometry"]
+position = Vector3(8, 1, -28)
+size = Vector3(4, 2, 4)
+material = SubResource("Mat_platform")
+
+[node name="Pillar00" type="CSGBox3D" parent="Geometry"]
+position = Vector3(-18, 3, -4)
+size = Vector3(1.2, 6, 1.2)
+material = SubResource("Mat_pillar")
+
+[node name="Pillar01" type="CSGBox3D" parent="Geometry"]
+position = Vector3(-17, 3, -9)
+size = Vector3(1.2, 6, 1.2)
+material = SubResource("Mat_pillar")
+
+[node name="Pillar02" type="CSGBox3D" parent="Geometry"]
+position = Vector3(-18, 3, -14)
+size = Vector3(1.2, 6, 1.2)
+material = SubResource("Mat_pillar")
+
+[node name="Pillar10" type="CSGBox3D" parent="Geometry"]
+position = Vector3(-22, 3, -4)
+size = Vector3(1.2, 6, 1.2)
+material = SubResource("Mat_pillar")
+
+[node name="Pillar11" type="CSGBox3D" parent="Geometry"]
+position = Vector3(-21, 3, -9)
+size = Vector3(1.2, 6, 1.2)
+material = SubResource("Mat_pillar")
+
+[node name="Pillar12" type="CSGBox3D" parent="Geometry"]
+position = Vector3(-22, 3, -14)
+size = Vector3(1.2, 6, 1.2)
+material = SubResource("Mat_pillar")
+
+[node name="Pillar20" type="CSGBox3D" parent="Geometry"]
+position = Vector3(-26, 3, -4)
+size = Vector3(1.2, 6, 1.2)
+material = SubResource("Mat_pillar")
+
+[node name="Pillar21" type="CSGBox3D" parent="Geometry"]
+position = Vector3(-25, 3, -9)
+size = Vector3(1.2, 6, 1.2)
+material = SubResource("Mat_pillar")
+
+[node name="Pillar22" type="CSGBox3D" parent="Geometry"]
+position = Vector3(-26, 3, -14)
+size = Vector3(1.2, 6, 1.2)
+material = SubResource("Mat_pillar")
+
+[node name="PillarWall" type="CSGBox3D" parent="Geometry"]
+position = Vector3(-30, 2, -9)
+size = Vector3(1, 4, 14)
+material = SubResource("Mat_pillar")
+
+[node name="LaneWallLeft" type="CSGBox3D" parent="Geometry"]
+position = Vector3(17, 1.5, -10)
+size = Vector3(0.5, 3, 30)
+material = SubResource("Mat_wall")
+
+[node name="LaneWallRight" type="CSGBox3D" parent="Geometry"]
+position = Vector3(21, 1.5, -10)
+size = Vector3(0.5, 3, 30)
+material = SubResource("Mat_wall")
+
+[node name="LaneBlock0" type="CSGBox3D" parent="Geometry"]
+position = Vector3(18.25, 0.5, -4)
+size = Vector3(1.5, 1, 0.6)
+material = SubResource("Mat_wall")
+
+[node name="LaneBlock1" type="CSGBox3D" parent="Geometry"]
+position = Vector3(19.75, 0.5, -10)
+size = Vector3(1.5, 1, 0.6)
+material = SubResource("Mat_wall")
+
+[node name="LaneBlock2" type="CSGBox3D" parent="Geometry"]
+position = Vector3(18.25, 0.5, -16)
+size = Vector3(1.5, 1, 0.6)
+material = SubResource("Mat_wall")
+
+[node name="LaneBlock3" type="CSGBox3D" parent="Geometry"]
+position = Vector3(19.75, 0.5, -22)
+size = Vector3(1.5, 1, 0.6)
+material = SubResource("Mat_wall")
+
+[node name="TunnelRoof" type="CSGBox3D" parent="Geometry"]
+position = Vector3(0, 2.3, 10)
+size = Vector3(4, 0.4, 6)
+material = SubResource("Mat_wall")
+
+[node name="TunnelSideL" type="CSGBox3D" parent="Geometry"]
+position = Vector3(-2.25, 1.05, 10)
+size = Vector3(0.5, 2.1, 6)
+material = SubResource("Mat_wall")
+
+[node name="TunnelSideR" type="CSGBox3D" parent="Geometry"]
+position = Vector3(2.25, 1.05, 10)
+size = Vector3(0.5, 2.1, 6)
+material = SubResource("Mat_wall")
+
+[node name="Signs" type="Node3D" parent="."]
+
+[node name="SignSteps" type="Label3D" parent="Signs"]
+position = Vector3(-8, 4.2, -3)
+billboard = 1
+font_size = 64
+outline_size = 16
+text = "Jump steps"
+
+[node name="SignGaps" type="Label3D" parent="Signs"]
+position = Vector3(8, 4.0, -4)
+billboard = 1
+font_size = 64
+outline_size = 16
+text = "Gap jumps (last gap needs an air dodge)"
+
+[node name="SignPillars" type="Label3D" parent="Signs"]
+position = Vector3(-22, 6.8, -9)
+billboard = 1
+font_size = 64
+outline_size = 16
+text = "Camera pillars"
+
+[node name="SignLane" type="Label3D" parent="Signs"]
+position = Vector3(19, 4.0, 6)
+billboard = 1
+font_size = 64
+outline_size = 16
+text = "Dodge lane"
+
+[node name="SignTunnel" type="Label3D" parent="Signs"]
+position = Vector3(0, 3.4, 7)
+billboard = 1
+font_size = 64
+outline_size = 16
+text = "Low tunnel"
