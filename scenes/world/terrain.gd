@@ -14,8 +14,6 @@ var paths: Array[PackedVector2Array] = [
 	PackedVector2Array([Vector2(1, -6), Vector2(-9, -10), Vector2(-14, -13)]),
 	# East trail.
 	PackedVector2Array([Vector2(3, -14), Vector2(22, -22), Vector2(42, -14), Vector2(62, -2), Vector2(84, 8)]),
-	# South-east trail.
-	PackedVector2Array([Vector2(0, 0), Vector2(14, 12), Vector2(30, 30), Vector2(40, 54), Vector2(36, 80)]),
 ]
 const PATH_HALF_WIDTH := 1.6
 const PATH_FEATHER := 1.4
@@ -40,6 +38,8 @@ var _path_mask := PackedFloat32Array()
 var _n := 0
 var _half := 0.0
 var _generated := false
+var _reserved: Array[Vector3] = []
+var _reserved_grass: Array[Vector3] = []
 
 
 func _ready() -> void:
@@ -138,22 +138,88 @@ func _smooth_max(a: float, b: float, k: float) -> float:
 func _build_path_mask() -> void:
 	_path_mask.resize(_n * _n)
 	_path_mask.fill(0.0)
-	var reach := PATH_HALF_WIDTH + PATH_FEATHER
 	for path in paths:
-		for s in path.size() - 1:
-			var a := path[s]
-			var b := path[s + 1]
-			var min_i := clampi(floori(minf(a.x, b.x) - reach + _half), 0, _n - 1)
-			var max_i := clampi(ceili(maxf(a.x, b.x) + reach + _half), 0, _n - 1)
-			var min_j := clampi(floori(minf(a.y, b.y) - reach + _half), 0, _n - 1)
-			var max_j := clampi(ceili(maxf(a.y, b.y) + reach + _half), 0, _n - 1)
-			for j in range(min_j, max_j + 1):
-				for i in range(min_i, max_i + 1):
-					var p := Vector2(i - _half, j - _half)
-					var d := p.distance_to(Geometry2D.get_closest_point_to_segment(p, a, b))
-					var value := 1.0 - smoothstep(PATH_HALF_WIDTH, reach, d)
-					var index := j * _n + i
-					_path_mask[index] = maxf(_path_mask[index], value)
+		paint_path(path, PATH_HALF_WIDTH)
+
+
+## Paints a dirt path into the mask. Call rebuild() afterwards if the terrain
+## has already been built.
+func paint_path(path: PackedVector2Array, half_width: float) -> void:
+	var reach := half_width + PATH_FEATHER
+	for s in path.size() - 1:
+		var a := path[s]
+		var b := path[s + 1]
+		var min_i := clampi(floori(minf(a.x, b.x) - reach + _half), 0, _n - 1)
+		var max_i := clampi(ceili(maxf(a.x, b.x) + reach + _half), 0, _n - 1)
+		var min_j := clampi(floori(minf(a.y, b.y) - reach + _half), 0, _n - 1)
+		var max_j := clampi(ceili(maxf(a.y, b.y) + reach + _half), 0, _n - 1)
+		for j in range(min_j, max_j + 1):
+			for i in range(min_i, max_i + 1):
+				var p := Vector2(i - _half, j - _half)
+				var d := p.distance_to(Geometry2D.get_closest_point_to_segment(p, a, b))
+				var value := 1.0 - smoothstep(half_width, reach, d)
+				var index := j * _n + i
+				_path_mask[index] = maxf(_path_mask[index], value)
+
+
+## Flattens a rotated rectangle (same yaw convention as Node3D) to `height`,
+## blending back into the surrounding ground over `margin` metres.
+func flatten_rect(center: Vector2, half_size: Vector2, yaw: float, height: float, margin := 3.0) -> void:
+	var reach := half_size.length() + margin
+	var min_i := clampi(floori(center.x - reach + _half), 0, _n - 1)
+	var max_i := clampi(ceili(center.x + reach + _half), 0, _n - 1)
+	var min_j := clampi(floori(center.y - reach + _half), 0, _n - 1)
+	var max_j := clampi(ceili(center.y + reach + _half), 0, _n - 1)
+	var x_axis := Vector2(cos(yaw), -sin(yaw))
+	var z_axis := Vector2(sin(yaw), cos(yaw))
+	for j in range(min_j, max_j + 1):
+		for i in range(min_i, max_i + 1):
+			var offset := Vector2(i - _half, j - _half) - center
+			var local := Vector2(absf(offset.dot(x_axis)), absf(offset.dot(z_axis)))
+			var outside := (local - half_size).max(Vector2.ZERO).length()
+			var weight := 1.0 - smoothstep(0.0, margin, outside)
+			var index := j * _n + i
+			_heights[index] = lerpf(_heights[index], height, weight)
+
+
+## Pulls a round area part of the way toward `height`, to settle a site
+## before planning on it. `strength` 1 flattens it completely.
+func soften_disc(center: Vector2, radius: float, height: float, strength: float, margin := 12.0) -> void:
+	var reach := radius + margin
+	for j in range(clampi(floori(center.y - reach + _half), 0, _n - 1), clampi(ceili(center.y + reach + _half), 0, _n - 1) + 1):
+		for i in range(clampi(floori(center.x - reach + _half), 0, _n - 1), clampi(ceili(center.x + reach + _half), 0, _n - 1) + 1):
+			var d := Vector2(i - _half, j - _half).distance_to(center)
+			var weight := (1.0 - smoothstep(radius, reach, d)) * strength
+			var index := j * _n + i
+			_heights[index] = lerpf(_heights[index], height, weight)
+
+
+## Marks an area as taken so scatterers skip it. Trees, rocks and flowers avoid
+## every reserved area; grass only avoids the ones with `blocks_grass` (the
+## footprints of buildings and fields, not the open ground between them).
+func reserve_area(center: Vector2, radius: float, blocks_grass := false) -> void:
+	(_reserved_grass if blocks_grass else _reserved).append(Vector3(center.x, center.y, radius))
+
+
+func is_reserved(x: float, z: float, for_grass := false) -> bool:
+	for area in _reserved_grass if for_grass else _reserved + _reserved_grass:
+		if Vector2(x, z).distance_squared_to(Vector2(area.x, area.y)) < area.z * area.z:
+			return true
+	return false
+
+
+func is_water(x: float, z: float) -> bool:
+	return Vector2(x, z).distance_to(pond_center) < pond_radius and height_at(x, z) < water_level + 0.3
+
+
+## Rebuilds the mesh and collision after flatten_rect or paint_path.
+func rebuild() -> void:
+	for child in [get_node_or_null("TerrainMesh"), get_node_or_null("TerrainCollision")]:
+		if child != null:
+			remove_child(child)
+			child.free()
+	_build_mesh()
+	_build_collision()
 
 
 func _build_mesh() -> void:

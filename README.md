@@ -19,6 +19,16 @@ The main scene (`scenes/world/world.tscn`) is a procedurally generated stylized 
 
 The terrain, trees and ruins are `@tool` scripts, so they also generate inside the editor. Change the exported values (seed, hill height, tree count and so on) on the Terrain, Vegetation and Landmarks nodes to reshape the world.
 
+## Procedural villages
+
+Villages are generated from recipes by a seeded factory: plan as data, validate, retry, then build. Millbrook, the arcanist's home, is generated around the spawn point. See [docs/procgen.md](docs/procgen.md) for how it works and how the same pattern extends to regions, dungeons and monsters.
+
+![Millbrook from above](docs/millbrook-aerial.png)
+
+- `systems/procgen/` holds the generation core and the village factory, with recipes in `systems/procgen/village/recipes/`.
+- `scenes/procgen/village_lab.tscn` rerolls villages by seed (N/B), recipe (1 to 3) and war damage (W).
+- `tests/procgen_test.gd` checks 200 seeds per recipe for valid, repeatable villages.
+
 ## Movement test level
 
 `scenes/greybox_test.tscn` is the original greybox level for tuning movement.
@@ -58,6 +68,10 @@ Movement feel is tuned through the exported variables on the `Player` node (`sce
 
 ```bash
 godot --headless --path . --script res://tests/smoke_test.gd
+```
+
+```bash
+godot --headless --path . --script res://tests/procgen_test.gd
 ```
 
 ## Layout

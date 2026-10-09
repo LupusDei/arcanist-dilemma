@@ -79,6 +79,11 @@ func _check_world() -> void:
 	_check(trees > 200, "trees are scattered")
 	_check(world.get_node("Vegetation/Grass").get_child_count() > 20, "grass chunks are built")
 	_check(world.get_node("Landmarks/Crystal") != null, "hilltop crystal exists")
+	var village = world.get_node("Millbrook")
+	print("     Millbrook: %s" % village.plan.summary())
+	_check(village.plan.is_valid(), "Millbrook plan is valid")
+	var spawn := Vector2(player.global_position.x, player.global_position.z)
+	_check(spawn.distance_to(village.center) < village.recipe.radius * 0.5, "player starts in Millbrook")
 
 
 func _frames(count: int) -> void:

@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="VillageRecipe" format=3]
+
+[ext_resource type="Script" path="res://systems/procgen/village/village_recipe.gd" id="1_recipe"]
+
+[resource]
+script = ExtResource("1_recipe")
+display_name = "Vell Road Waystation"
+layout = 2
+radius = 28.0
+house_count = 10
+prosperity = 0.7
+farm_share = 0.2
+anchors = PackedStringArray("tavern", "smithy", "warden_post", "notice_board")
+faction = "wardens"
+wall_color = Color(0.72, 0.62, 0.48, 1)
+roof_color = Color(0.45, 0.5, 0.62, 1)

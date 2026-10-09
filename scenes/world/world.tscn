@@ -6,6 +6,8 @@
 [ext_resource type="Script" path="res://scenes/world/landmarks.gd" id="4_landmarks"]
 [ext_resource type="PackedScene" path="res://scenes/player/player.tscn" id="5_player"]
 [ext_resource type="PackedScene" path="res://scenes/ui/hud.tscn" id="6_hud"]
+[ext_resource type="Script" path="res://scenes/world/village_site.gd" id="7_village"]
+[ext_resource type="Resource" path="res://systems/procgen/village/recipes/millbrook.tres" id="8_millbrook"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_sky"]
 shader = ExtResource("1_sky")
@@ -46,6 +48,11 @@ directional_shadow_max_distance = 140.0
 
 [node name="Terrain" type="StaticBody3D" parent="."]
 script = ExtResource("2_terrain")
+
+[node name="Millbrook" type="Node3D" parent="."]
+script = ExtResource("7_village")
+recipe = ExtResource("8_millbrook")
+spawn_node = NodePath("../Player")
 
 [node name="Vegetation" type="Node3D" parent="."]
 script = ExtResource("3_vegetation")

@@ -130,6 +130,8 @@ func _build_ruins() -> void:
 
 func _build_trail_blocks() -> void:
 	for spot in [Vector2(-5, 5), Vector2(7, -21), Vector2(-7, -35), Vector2(-5, -38), Vector2(7, -47), Vector2(18, -62)]:
+		if _terrain.is_reserved(spot.x, spot.y):
+			continue
 		var size := Vector3(_rng.randf_range(1.0, 1.8), _rng.randf_range(0.8, 1.6), _rng.randf_range(1.0, 1.6))
 		var y := _terrain.height_at(spot.x, spot.y)
 		var tilt := Basis(Vector3.UP, _rng.randf() * TAU) * Basis(Vector3.RIGHT, _rng.randf_range(-0.12, 0.12))

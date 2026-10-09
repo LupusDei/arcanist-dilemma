@@ -115,7 +115,7 @@ func _scatter_rocks() -> void:
 	# Pebbles: decoration only.
 	for i in pebble_count:
 		var p := Vector2(_rng.randf_range(-120.0, 120.0), _rng.randf_range(-120.0, 120.0))
-		if _terrain.normal_at(p.x, p.y).y < 0.6:
+		if _terrain.normal_at(p.x, p.y).y < 0.6 or _terrain.is_reserved(p.x, p.y):
 			continue
 		_add_rock(variants.pick_random(), transforms, p, _rng.randf_range(0.15, 0.5), false)
 	# A ring of stones around the pond.
@@ -162,6 +162,8 @@ func _scatter_grass() -> void:
 			if _rng.randf() > 0.35 + patch * 0.65:
 				continue
 			if _rng.randf() < _terrain.path_mask_at(p.x, p.y) * 1.3:
+				continue
+			if _terrain.is_reserved(p.x, p.y, true):
 				continue
 			var height := _terrain.height_at(p.x, p.y)
 			if height < _terrain.water_level + 0.15 or _terrain.normal_at(p.x, p.y).y < 0.75:
@@ -215,6 +217,8 @@ func _scatter_flowers() -> void:
 
 ## True if the spot is dry, off the paths and outside the spawn clearing.
 func _is_open_ground(p: Vector2, water_margin: float, path_margin: float) -> bool:
+	if _terrain.is_reserved(p.x, p.y):
+		return false
 	if _terrain.height_at(p.x, p.y) < _terrain.water_level + water_margin:
 		return false
 	if p.distance_to(_terrain.pond_center) < _terrain.pond_radius + 2.0:

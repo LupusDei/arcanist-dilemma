@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="VillageRecipe" format=3]
+
+[ext_resource type="Script" path="res://systems/procgen/village/village_recipe.gd" id="1_recipe"]
+
+[resource]
+script = ExtResource("1_recipe")
+display_name = "Millbrook"
+layout = 0
+radius = 32.0
+house_count = 12
+prosperity = 0.45
+farm_share = 0.4
+anchors = PackedStringArray("well", "tavern", "notice_board", "bakery", "shrine", "home_farm")
