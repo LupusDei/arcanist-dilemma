@@ -1,0 +1,35 @@
+{
+	"_comment": "Loot rolls, read by LootRoller. A source (normal monster, elite, boss, chest) makes `rolls` picks from its outcome weights. Biomes scale those weights and pick which materials drop. Rarity weights are scaled by the source's rarity_bonus, the biome's, item level and magic find (diminishing, as in Diablo 2).",
+	"sources": {
+		"normal": {"rolls": 1, "weights": {"nothing": 55, "gold": 25, "potion": 9, "gear": 9, "spellbook": 0.8, "material": 6}},
+		"elite": {"rolls": 2, "rarity_bonus": 1.6, "weights": {"nothing": 15, "gold": 25, "potion": 12, "gear": 30, "spellbook": 3, "material": 8}},
+		"boss": {"rolls": 4, "rarity_bonus": 3.0, "guaranteed": ["gear", "gear"], "weights": {"nothing": 0, "gold": 20, "potion": 10, "gear": 50, "spellbook": 8, "material": 5}},
+		"chest": {"rolls": 2, "rarity_bonus": 1.2, "weights": {"nothing": 10, "gold": 35, "potion": 25, "gear": 25, "spellbook": 4, "material": 0}},
+		"chest_large": {"rolls": 4, "rarity_bonus": 2.0, "guaranteed": ["gear"], "weights": {"nothing": 0, "gold": 30, "potion": 20, "gear": 40, "spellbook": 8, "material": 0}}
+	},
+	"biomes": {
+		"village": {"multipliers": {"gear": 0.5, "material": 0.0}},
+		"meadow": {"multipliers": {}, "materials": {"bramble_thorn": 5, "hound_pelt": 5}},
+		"forest": {"multipliers": {"material": 1.2}, "materials": {"bramble_thorn": 4, "hound_pelt": 4, "hex_dust": 3}},
+		"ruins": {"multipliers": {"spellbook": 2.0}, "rarity_bonus": 1.1, "materials": {"arcane_scrap": 5, "hex_dust": 3, "ley_shard": 2}},
+		"dungeon": {"multipliers": {"gear": 1.3, "spellbook": 1.5}, "rarity_bonus": 1.25, "materials": {"arcane_scrap": 4, "hex_dust": 3, "ley_shard": 3}}
+	},
+	"rarity": {
+		"_comment": "Base weights. magic, rare and unique are multiplied by (1 + level_bonus * item_level) * rarity_bonus * (1 + effective magic find); effective MF = mf * k / (mf + k) for rare and unique.",
+		"weights": {"common": 60, "magic": 32, "rare": 6, "unique": 1.2},
+		"level_bonus": 0.02,
+		"magic_find_diminish": 2.5
+	},
+	"gold": {"base": 3, "per_level": 2.0, "spread": 0.5},
+	"potion": {"health_chance": 0.65},
+	"spellbook": {
+		"_comment": "Circle rolled from 1 to the highest open at the item level (I at 1, II at 4 ... VII at 19), tilted toward the top by high_circle_bias. Variant books (Searing Fireball) drop from circle III at variant_chance.",
+		"high_circle_bias": 0.55,
+		"variant_chance": 0.12
+	},
+	"starter_kit": {
+		"equipped": ["oak_staff", "linen_robe", "sandals"],
+		"bag": [{"id": "minor_health_potion", "qty": 3}, {"id": "minor_ley_draught", "qty": 2}],
+		"gold": 10
+	}
+}
