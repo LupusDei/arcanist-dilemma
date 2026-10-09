@@ -1,0 +1,169 @@
+{
+	"quests": [
+		{
+			"id": "hat_and_warden",
+			"title": "The Hat and the Warden",
+			"kind": "key",
+			"act": "I",
+			"level": 2,
+			"giver": "warden_lieutenant",
+			"summary": "The Wardens want the old man's hat and staff. Give them up and earn the High Warden's trust, or keep them and keep his voice close.",
+			"auto_start": [{"quest": "prologue", "state": "completed"}],
+			"rewards": {"xp": 300, "gold": 25},
+			"stages": [
+				{
+					"id": "summons",
+					"description": "A Warden lieutenant has ridden into Millbrook asking for you by name.",
+					"objectives": [
+						{"id": "meet", "type": "talk", "target": "warden_lieutenant", "description": "Meet Lieutenant Hale at the Mill Wheel"}
+					],
+					"next": "decide"
+				},
+				{
+					"id": "decide",
+					"description": "Lieutenant Hale wants the old man's hat and staff before dusk.",
+					"complete_when": "any",
+					"objectives": [
+						{"id": "hand_over", "type": "flag", "target": "belongings_handed_over", "description": "Hand the hat and staff to Hale"},
+						{"id": "hide", "type": "flag", "target": "belongings_hidden", "description": "Or hide them under the old mill's floorboards", "optional": true},
+						{"id": "lie", "type": "flag", "target": "lied_to_hale", "description": "...and tell Hale you have nothing"},
+						{"id": "refuse", "type": "flag", "target": "refused_hale", "description": "Or refuse him to his face"}
+					],
+					"branches": [
+						{"conditions": [{"flag": "refused_hale"}], "next": "fight"}
+					],
+					"next": "aftermath"
+				},
+				{
+					"id": "fight",
+					"description": "Hale's escort has drawn steel. Nobody in Millbrook has seen a Warden fight before.",
+					"objectives": [
+						{"id": "escort", "type": "kill", "target": "warden_escort", "count": 2, "description": "Drive off Hale's escort"}
+					],
+					"on_complete": [
+						{"set": "drove_off_wardens", "standing": {"wardens": -25}, "alignment": {"law": -4, "good": -2}},
+						{"event": "wardens_retreat"}
+					],
+					"next": "aftermath"
+				},
+				{
+					"id": "aftermath",
+					"description": "It's done, one way or another. Tam saw everything.",
+					"objectives": [
+						{"id": "tam", "type": "talk", "target": "tam", "description": "Talk to Tam"}
+					]
+				}
+			]
+		}
+	],
+	"dialogues": [
+		{
+			"id": "hale_summons",
+			"npc": "warden_lieutenant",
+			"priority": 10,
+			"conditions": [{"quest": "hat_and_warden", "stage": "summons"}],
+			"lines": [
+				{"speaker": "narrator", "text": "A Warden in a pressed blue coat sits at the best table in the Mill Wheel, with two armed riders behind him. He does not get up."},
+				{"text": "You'll be the farm kid with the sparks. Lieutenant Hale, Wardens of the Crown. Sit.", "branches": [
+					{"conditions": [{"flag": "told_wardens"}], "next": "knows"}
+				], "next": "suspects"},
+				{"id": "knows", "text": "Sergeant Brask's report says you kept a hat and a staff belonging to the man on the hill. Honest of you. The High Warden wants them.", "next": "demand"},
+				{"id": "suspects", "text": "Funny thing. A shepherd says a farm kid walked down off that hill carrying a staff. Sergeant Brask's report says the old man left nothing at all. Someone's wrong.", "next": "demand"},
+				{"id": "demand", "text": "The hat and the staff are evidence in a matter of the Crown. The High Warden wants them. Bring them to me before dusk.", "choices": [
+					{"text": "Why does the High Warden care about one old man?", "next": "why"},
+					{"text": "Who was he?", "next": "who"},
+					{"text": "I'll think about it.", "next": "dusk"}
+				]},
+				{"id": "why", "text": "That's above both of us, farm kid. High Warden Varrow doesn't explain herself to lieutenants, and she certainly doesn't explain herself to you.", "next": "dusk"},
+				{"id": "who", "text": "A vagrant. A danger. Someone who should have stayed in whatever hole he crawled out of. That's all you need to know.", "next": "dusk"},
+				{"id": "dusk", "text": "Before dusk. Don't make me come looking.", "effects": [{"set": "met_hale"}]}
+			]
+		},
+		{
+			"id": "hale_decide",
+			"npc": "warden_lieutenant",
+			"priority": 10,
+			"conditions": [{"quest": "hat_and_warden", "stage": "decide"}],
+			"lines": [
+				{"text": "Well? The hat and the staff.", "choices": [
+					{"text": "Here. Take them.", "next": "handed", "effects": [
+						{"take": {"old_mans_hat": 1, "worn_staff": 1}},
+						{"alignment": {"law": 12}},
+						{"standing": {"wardens": 15}},
+						{"set": ["varrow_trust", "warden_contact"]},
+						{"clear": "has_old_mans_belongings"},
+						{"set": "belongings_handed_over"}
+					]},
+					{"text": "I don't have them. Search me if you like.", "next": "searched", "show_locked": true, "locked_text": "Hide them somewhere first", "conditions": [{"flag": "belongings_hidden"}], "effects": [
+						{"alignment": {"law": -12}},
+						{"standing": {"wardens": -5}},
+						{"set": ["old_man_dreams_sooner", "kept_belongings"]},
+						{"set": "lied_to_hale"}
+					]},
+					{"text": "They're not yours. You're not getting them.", "next": "refused", "effects": [
+						{"alignment": {"law": -12}},
+						{"set": ["old_man_dreams_sooner", "kept_belongings"]},
+						{"set": "refused_hale"}
+					]},
+					{"text": "Not yet. I need more time.", "hint": "-", "next": "wait"}
+				]},
+				{"id": "handed", "text": "Sensible. The High Warden remembers sensible people. If you ever need the Wardens, ask for me by name.", "next": "handed_after"},
+				{"id": "handed_after", "speaker": "narrator", "text": "As the staff leaves your hand it stops humming, as if it had been holding its breath. You feel oddly cold.", "end": true},
+				{"id": "searched", "speaker": "narrator", "text": "Hale's riders turn out your pockets, your pack and the barn. They find a great deal of hay and nothing else."},
+				{"text": "...Fine. But I'll be watching you, farm kid. So will she.", "end": true},
+				{"id": "refused", "text": "Wrong answer.", "effects": [{"event": "warden_escort_attack"}], "end": true},
+				{"id": "wait", "text": "The sun won't wait, and neither will I.", "end": true}
+			]
+		},
+		{
+			"id": "old_mill_hide",
+			"npc": "old_mill_floorboards",
+			"priority": 10,
+			"conditions": [{"quest": "hat_and_warden", "stage": "decide"}, {"not_flag": "belongings_hidden"}],
+			"lines": [
+				{"speaker": "narrator", "text": "A loose board in the old mill's loft. Tam showed you this hiding place years ago. Nobody else knows it.", "choices": [
+					{"text": "Hide the hat and staff under the floorboards.", "next": "hidden", "effects": [{"set": "belongings_hidden"}]},
+					{"text": "Leave them where they are.", "hint": "-", "next": "leave"}
+				]},
+				{"id": "hidden", "speaker": "narrator", "text": "The staff hums once as the board settles over it, like a sigh of relief.", "end": true},
+				{"id": "leave", "speaker": "narrator", "text": "You leave the board as it is.", "end": true}
+			]
+		},
+		{
+			"id": "tam_aftermath",
+			"npc": "tam",
+			"priority": 10,
+			"conditions": [{"quest": "hat_and_warden", "stage": "aftermath"}],
+			"lines": [
+				{"speaker": "narrator", "text": "Tam has been waiting by the gate.", "branches": [
+					{"conditions": [{"flag": "drove_off_wardens"}], "next": "fought"},
+					{"conditions": [{"flag": "lied_to_hale"}], "next": "lied"}
+				], "next": "handed"},
+				{"id": "handed", "text": "You just gave them away? He gave those to YOU. Not to the Wardens. You.", "choices": [
+					{"text": "It was the right thing to do. They're the law.", "next": "ask"},
+					{"text": "It was the safe thing to do. For you, and for Ma.", "next": "ask"}
+				]},
+				{"id": "lied", "text": "You lied to a Warden. To his face. While they turned out the barn. ...That's the best thing I've ever seen.", "choices": [
+					{"text": "Nobody can know where they are, Tam. Not even Ma.", "next": "ask", "effects": [{"add": {"tam_bond": 1}}]},
+					{"text": "Don't get any ideas. Lying to Wardens is not a game.", "next": "ask"}
+				]},
+				{"id": "fought", "text": "Everyone saw. The whole village saw you fight the Wardens. Ma's going to... I don't even know what Ma's going to do.", "choices": [
+					{"text": "They drew steel first.", "next": "ask"},
+					{"text": "I'd do it again.", "next": "ask", "effects": [{"alignment": {"law": -2}}]}
+				]},
+				{"id": "ask", "text": "Do you think he's really gone? The old man?", "choices": [
+					{"text": "No. I think he's somewhere. I think he's waiting.", "next": "end", "hint": "-"},
+					{"text": "I don't know, Tam.", "next": "end", "hint": "-"}
+				]},
+				{"id": "end", "speaker": "narrator", "text": "Tam nods, very seriously, and doesn't let go of your sleeve for a long time.", "end": true}
+			]
+		},
+		{
+			"id": "hale_idle",
+			"npc": "warden_lieutenant",
+			"lines": [
+				{"text": "Move along, farm kid."}
+			]
+		}
+	]
+}

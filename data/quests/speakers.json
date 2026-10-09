@@ -1,0 +1,21 @@
+{
+	"speakers": {
+		"narrator": {"name": ""},
+		"old_man": {
+			"name": "The Old Man in Grey",
+			"revealed_name": "Ebon Thale",
+			"reveal_flag": "greycloak_revealed",
+			"color": "#c9c3b4"
+		},
+		"dream_voice": {"name": "A Voice", "color": "#b8b2d9"},
+		"tam": {"name": "Tam", "color": "#9fd47a"},
+		"rook": {"name": "Rook Barlow", "color": "#d9a066"},
+		"farmer_hollis": {"name": "Farmer Hollis", "color": "#d6c27a"},
+		"innkeeper": {"name": "Bettany", "color": "#e3a6a0"},
+		"warden_sergeant": {"name": "Sergeant Brask", "color": "#7fa6e0"},
+		"warden_lieutenant": {"name": "Lieutenant Hale", "color": "#7fa6e0"},
+		"children": {"name": "Village Children", "color": "#f0d890"},
+		"home_bed": {"name": ""},
+		"old_mill_floorboards": {"name": ""}
+	}
+}
