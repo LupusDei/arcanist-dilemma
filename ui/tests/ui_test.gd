@@ -221,7 +221,8 @@ func _test_main_menu() -> void:
 	m.game_scene = ""
 	root.add_child(m)
 	await _frames(1)
-	_check(m.continue_button.disabled, "Continue is disabled without saves")
+	# Continue follows whether a save exists (earlier runs may have left one).
+	_check(m.continue_button.disabled == ProgressionSave.list_slots(1).is_empty(), "Continue is only enabled with a save")
 	m.new_game_button.pressed.emit()
 	_check(m.creation.visible and not m.menu.visible, "New game opens character creation")
 	m.creation.cancelled.emit()

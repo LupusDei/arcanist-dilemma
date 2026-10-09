@@ -51,6 +51,12 @@ func _go_to_main_menu() -> void:
 		get_tree().change_scene_to_file(main_menu_scene)
 
 
+func _save_game() -> void:
+	var session := get_tree().get_first_node_in_group(&"game_session")
+	if session != null and session.has_method("save_game"):
+		session.save_game()
+
+
 func _quit() -> void:
 	quit_requested.emit()
 	get_tree().quit()
@@ -81,6 +87,7 @@ func _build() -> void:
 	_button(box, "Character  (C)", func(): close(); character_requested.emit())
 	_button(box, "Talents  (K)", func(): close(); talents_requested.emit())
 	box.add_child(HSeparator.new())
+	_button(box, "Save game  (F5)", _save_game)
 	_button(box, "Main menu", _go_to_main_menu)
 	_button(box, "Quit to desktop", _quit)
 

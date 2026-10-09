@@ -500,6 +500,11 @@ func _test_inventory_screen() -> void:
 	var ring := ItemInstance.create(&"ring")
 	items.pick_up(ring)
 	await process_frame
+	# With the Progression autoload in the project the character is level 1; lift
+	# them to the ring's level so this checks the right click, not the requirement.
+	var progression := root.get_node_or_null("Progression")
+	while progression != null and items.check_equip(ring) == &"level" and progression.progression.level < 20:
+		progression.grant_xp(1000, "test")
 	screen.activate_bag_item(ring)
 	_check(items.equipment.is_equipped(ring), "right click on a ring equips it")
 	screen.close()

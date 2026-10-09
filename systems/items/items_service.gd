@@ -294,8 +294,9 @@ func on_enemy_died(enemy: Node, _xp_value: int, _loot: Array) -> void:
 	var rng := LootRoller.rng_for(loot_seed, _kills, level)
 	var drops := LootRoller.roll(LootRoller.source_for_enemy(enemy), current_biome, level, rng,
 			get_gear_stat(&"magic_find"), get_gear_stat(&"gold_find"))
-	var origin: Vector3 = enemy.global_position if enemy is Node3D else _player_position()
-	spawn_drops(drops, origin, enemy.get_parent() if enemy.get_parent() else get_tree().current_scene)
+	var in_world := enemy is Node3D and enemy.is_inside_tree()
+	var origin: Vector3 = enemy.global_position if in_world else _player_position()
+	spawn_drops(drops, origin, enemy.get_parent() if in_world else get_tree().current_scene)
 
 
 ## Scatters items on the ground around [param origin].

@@ -6,9 +6,9 @@ A third-person action RPG about an arcanist and their journey through magic and 
 
 ## Playing the prototype
 
-The game boots to the main menu. New Game opens character creation, then drops you on the green in Millbrook. Monsters roam the meadow and the woods (levels 1 to 3) and guard the hilltop ruins (levels 3 to 5, more elites). You start with the three tricks (Spark, Nudge, Jolt); kills give XP, and at level 5 you choose wizard, mage or sorcerer and get that path's starting spells. Dying drops you back at Millbrook after a few seconds.
+The game boots to the main menu. New Game opens character creation and starts the prologue on the green in Millbrook; Continue loads your save. Talk to anyone with a "!" (E) to follow the story: chores with magic, Rook at the well, the wolves in the barley, the old man in grey at the tavern, the hill road, and then Act I's The Hat and the Warden. Monsters roam the meadow and guard the hilltop ruins, and drop Diablo-style loot (I for the inventory). Two archways lead underground: the Ruined Crypt east of Millbrook (levels 1 to 3) and the Drowned Chapel on the hill (levels 3 to 5), each a seeded dungeon with a key, a locked door, chests and a boss. At level 5 you choose wizard, mage or sorcerer.
 
-`scenes/world/game_session.gd` is the only place that knows about every system: it feeds progression into the player's combat stats, swaps spells on the path choice, turns kills into XP and spawns the monsters. Combat, progression, enemies and the UI each have their own folder and README (`systems/combat/`, `systems/progression/`, `actors/enemies/`, `ui/`).
+`scenes/world/game_session.gd` is the glue between systems (progression into combat, the path choice, quests hearing casts, the loot biome, saving and dungeon trips). `scenes/world/millbrook_story.gd` places the story's people and places around the generated village, and `scenes/world/dungeon_sites.gd` and `dungeon_run.tscn` handle the dungeons. Each system has its own folder and README: `systems/combat/`, `systems/progression/`, `systems/items/`, `systems/quests/`, `actors/enemies/`, `actors/characters/`, `world/dungeons/`, `ui/`.
 
 ## The meadow
 
@@ -68,6 +68,10 @@ Surfaces are textured procedurally in shaders (no image files): plank walls, shi
 | Character sheet / talents | C / K | |
 | Choose your path (from level 5) | P | |
 | Pause | Esc | |
+| Talk / use / open chests | E | RB |
+| Inventory | I | Back |
+| Drink a health potion | Q | |
+| Save | F5 (also in the pause menu, and automatically) | |
 | Reset to spawn | R | LB |
 | Grant 500 XP (prototype shortcut) | F8 | |
 
@@ -93,6 +97,10 @@ godot --headless --path . --script res://tests/procgen_test.gd
 
 ```bash
 godot --headless --path . --fixed-fps 60 --script res://tests/play_session_test.gd
+```
+
+```bash
+godot --headless --path . --fixed-fps 60 --script res://tests/full_game_test.gd
 ```
 
 Each system also has its own suite under its folder's `tests/`.

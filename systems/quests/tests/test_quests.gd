@@ -18,6 +18,14 @@ func _initialize() -> void:
 
 
 func _run() -> void:
+	# These tests build their own QuestManager. Keep the project's autoloads
+	# (Quests, Items) from answering the same groups and hooks meanwhile.
+	for autoload_name in ["Quests", "Items"]:
+		var autoload := root.get_node_or_null(autoload_name)
+		if autoload != null:
+			for group in [QuestManager.GROUP, QuestManager.ENEMY_LISTENER_GROUP, QuestManager.LOOT_LISTENER_GROUP]:
+				if autoload.is_in_group(group):
+					autoload.remove_from_group(group)
 	var tests := [
 		"test_data_loads_cleanly",
 		"test_validation_catches_mistakes",

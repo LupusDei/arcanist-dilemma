@@ -7,6 +7,9 @@
 [ext_resource type="PackedScene" path="res://scenes/player/player.tscn" id="5_player"]
 [ext_resource type="PackedScene" path="res://ui/game_ui.tscn" id="6_game_ui"]
 [ext_resource type="Script" path="res://scenes/world/game_session.gd" id="9_session"]
+[ext_resource type="Script" path="res://scenes/world/dungeon_sites.gd" id="10_dungeons"]
+[ext_resource type="Script" path="res://scenes/world/millbrook_story.gd" id="11_story"]
+[ext_resource type="PackedScene" path="res://ui/dialogue/quest_ui.tscn" id="12_quest_ui"]
 [ext_resource type="Script" path="res://scenes/world/village_site.gd" id="7_village"]
 [ext_resource type="Resource" path="res://systems/procgen/village/recipes/millbrook.tres" id="8_millbrook"]
 
@@ -55,6 +58,12 @@ script = ExtResource("7_village")
 recipe = ExtResource("8_millbrook")
 spawn_node = NodePath("../Player")
 
+[node name="DungeonSites" type="Node3D" parent="."]
+script = ExtResource("10_dungeons")
+
+[node name="MillbrookStory" type="Node3D" parent="."]
+script = ExtResource("11_story")
+
 [node name="Vegetation" type="Node3D" parent="."]
 script = ExtResource("3_vegetation")
 
@@ -69,3 +78,5 @@ script = ExtResource("9_session")
 
 [node name="GameUI" parent="." instance=ExtResource("6_game_ui")]
 use_mock_when_missing = false
+
+[node name="QuestUI" parent="." instance=ExtResource("12_quest_ui")]

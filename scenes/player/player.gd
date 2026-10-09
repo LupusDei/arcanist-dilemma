@@ -123,6 +123,11 @@ func _physics_process(delta: float) -> void:
 		respawn()
 
 
+## Makes the current position the respawn point (after a scene places the player).
+func set_spawn_here() -> void:
+	_spawn_transform = global_transform
+
+
 func respawn() -> void:
 	global_transform = _spawn_transform
 	velocity = Vector3.ZERO

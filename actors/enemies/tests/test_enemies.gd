@@ -29,6 +29,13 @@ func _initialize() -> void:
 
 
 func _run() -> void:
+	# The Items autoload would dress the test player in starting gear (armor,
+	# health) and drop loot on kills; these tests check bare numbers.
+	var items := root.get_node_or_null("Items")
+	if items != null:
+		items.equipment.clear()
+		items.drop_items_on_kill = false
+		items.set_process(false)
 	_test_health()
 	_test_loot_table()
 	await _test_damage_rules()

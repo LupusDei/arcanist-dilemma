@@ -4,52 +4,12 @@
 [ext_resource type="Script" path="res://systems/combat/health_component.gd" id="2_health"]
 [ext_resource type="Script" path="res://systems/combat/spell_caster.gd" id="3_caster"]
 [ext_resource type="Script" path="res://systems/combat/input/player_combat_input.gd" id="4_combat_input"]
+[ext_resource type="PackedScene" path="res://actors/characters/arcanist.tscn" id="5_arcanist"]
+[ext_resource type="Script" path="res://actors/characters/drivers/character_animation_driver.gd" id="6_anim_driver"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_body"]
 radius = 0.35
 height = 1.7
-
-[sub_resource type="CapsuleMesh" id="CapsuleMesh_body"]
-radius = 0.35
-height = 1.7
-
-[sub_resource type="StandardMaterial3D" id="Mat_robe"]
-albedo_color = Color(0.32, 0.2, 0.55, 1)
-roughness = 0.8
-
-[sub_resource type="CylinderMesh" id="CylinderMesh_hat"]
-top_radius = 0.0
-bottom_radius = 0.45
-height = 0.75
-
-[sub_resource type="StandardMaterial3D" id="Mat_hat"]
-albedo_color = Color(0.17, 0.1, 0.34, 1)
-roughness = 0.9
-
-[sub_resource type="BoxMesh" id="BoxMesh_face"]
-size = Vector3(0.36, 0.12, 0.08)
-
-[sub_resource type="StandardMaterial3D" id="Mat_face"]
-albedo_color = Color(0.95, 0.85, 0.7, 1)
-
-[sub_resource type="CylinderMesh" id="CylinderMesh_staff"]
-top_radius = 0.03
-bottom_radius = 0.03
-height = 1.8
-
-[sub_resource type="StandardMaterial3D" id="Mat_staff"]
-albedo_color = Color(0.42, 0.27, 0.14, 1)
-roughness = 0.7
-
-[sub_resource type="SphereMesh" id="SphereMesh_orb"]
-radius = 0.12
-height = 0.24
-
-[sub_resource type="StandardMaterial3D" id="Mat_orb"]
-albedo_color = Color(0.4, 0.85, 1, 1)
-emission_enabled = true
-emission = Color(0.3, 0.8, 1, 1)
-emission_energy_multiplier = 3.0
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_camera"]
 radius = 0.2
@@ -63,35 +23,7 @@ shape = SubResource("CapsuleShape3D_body")
 
 [node name="Model" type="Node3D" parent="."]
 
-[node name="Body" type="MeshInstance3D" parent="Model"]
-position = Vector3(0, 0.85, 0)
-mesh = SubResource("CapsuleMesh_body")
-surface_material_override/0 = SubResource("Mat_robe")
-
-[node name="Hat" type="MeshInstance3D" parent="Model"]
-position = Vector3(0, 1.9, 0)
-mesh = SubResource("CylinderMesh_hat")
-surface_material_override/0 = SubResource("Mat_hat")
-
-[node name="Face" type="MeshInstance3D" parent="Model"]
-position = Vector3(0, 1.42, -0.32)
-mesh = SubResource("BoxMesh_face")
-surface_material_override/0 = SubResource("Mat_face")
-
-[node name="Staff" type="MeshInstance3D" parent="Model"]
-position = Vector3(0.48, 0.95, -0.18)
-mesh = SubResource("CylinderMesh_staff")
-surface_material_override/0 = SubResource("Mat_staff")
-
-[node name="Orb" type="MeshInstance3D" parent="Model/Staff"]
-position = Vector3(0, 0.98, 0)
-mesh = SubResource("SphereMesh_orb")
-surface_material_override/0 = SubResource("Mat_orb")
-
-[node name="OrbLight" type="OmniLight3D" parent="Model/Staff/Orb"]
-light_color = Color(0.4, 0.85, 1, 1)
-light_energy = 0.8
-omni_range = 3.0
+[node name="Arcanist" parent="Model" instance=ExtResource("5_arcanist")]
 
 [node name="CameraPivot" type="Node3D" parent="."]
 position = Vector3(0, 1.5, 0)
@@ -118,3 +50,6 @@ position = Vector3(0, 1.2, 0)
 
 [node name="PlayerCombatInput" type="Node" parent="."]
 script = ExtResource("4_combat_input")
+
+[node name="CharacterAnimationDriver" type="Node" parent="."]
+script = ExtResource("6_anim_driver")

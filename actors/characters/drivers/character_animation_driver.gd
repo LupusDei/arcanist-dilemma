@@ -40,6 +40,11 @@ func _ready() -> void:
 
 
 func _physics_process(_delta: float) -> void:
+	# The rig can be rebuilt or replaced (new game, swapped model); find it again.
+	if not is_instance_valid(rig):
+		rig = _find_rig(body)
+		if rig == null:
+			return
 	var v := body.velocity
 	rig.update_locomotion(Vector2(v.x, v.z).length(), body.is_on_floor(), v.y)
 

@@ -37,6 +37,15 @@ func close_creation() -> void:
 	new_game_button.grab_focus.call_deferred()
 
 
+## Loads the saved game (slot 0) and goes into the world.
+func _continue_game() -> void:
+	var progression := get_node_or_null(^"/root/Progression")
+	if progression == null or not progression.load_game(0):
+		return
+	if game_scene != "" and ResourceLoader.exists(game_scene):
+		get_tree().change_scene_to_file(game_scene)
+
+
 func _on_character_confirmed(character: Dictionary) -> void:
 	new_game_started.emit(character)
 	if game_scene != "" and ResourceLoader.exists(game_scene):
@@ -91,9 +100,14 @@ func _build() -> void:
 	buttons.custom_minimum_size = Vector2(320, 0)
 	box.add_child(buttons)
 	new_game_button = _button(buttons, "New game", open_creation)
-	continue_button = _button(buttons, "Continue", func(): pass)
-	continue_button.disabled = true
-	continue_button.tooltip_text = "No saved game yet"
+	continue_button = _button(buttons, "Continue", _continue_game)
+	var saves: Array = ProgressionSave.list_slots(1)
+	continue_button.disabled = saves.is_empty()
+	if saves.is_empty():
+		continue_button.tooltip_text = "No saved game yet"
+	else:
+		var save: Dictionary = saves[0]
+		continue_button.tooltip_text = "%s, level %d" % [save.get("name", ""), save.get("level", 1)]
 	var options := _button(buttons, "Options", func(): pass)
 	options.disabled = true
 	options.tooltip_text = "Coming soon"

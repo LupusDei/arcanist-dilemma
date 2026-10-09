@@ -166,6 +166,14 @@ func _check_play() -> int:
 	player.global_position = chest.global_position + chest.global_basis.z * 1.3 + Vector3(0, 0.2, 0)
 	for i in 10:
 		await physics_frame
+	# Once the project defines an interact action, chests wait for it instead of opening on touch.
+	if InputMap.has_action(&"interact"):
+		var press := InputEventAction.new()
+		press.action = &"interact"
+		press.pressed = true
+		Input.parse_input_event(press)
+		for i in 5:
+			await physics_frame
 	var nav_ok := NavigationServer3D.map_get_regions(dungeon.get_world_3d().navigation_map).size() > 0
 	print("  play: %d monsters spawned, events %s, navmesh %s" % [monsters, str(events), "baked" if nav_ok else "missing"])
 	var locks := dungeon.plan.recipe.locks
