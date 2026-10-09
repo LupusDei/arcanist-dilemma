@@ -1,0 +1,29 @@
+{
+	"_comment": "Named gold items with fixed stats. spells = '+N to a spell' (spell id -> ranks). quest_only uniques never drop at random; quests hand them out with ItemGenerator.make_unique(id).",
+	"uniques": [
+		{"id": "greycloaks_staff", "name": "Greycloak's Walking Staff", "base": "oak_staff", "level": 1, "quest_only": true,
+			"stats": {"spell_power": 15, "wisdom": 3, "cast_speed": 8, "resist_all": 5},
+			"flavor": "Worn smooth by a hand that has walked every road. It was waiting for you."},
+		{"id": "the_first_spoon", "name": "The First Spoon", "base": "willow_wand", "level": 3, "weight": 2,
+			"stats": {"force_power": 30, "dexterity": 3, "magic_find": 15},
+			"flavor": "You moved it with your mind once. It has not forgotten."},
+		{"id": "hearthwarden", "name": "Millbrook Hearthwarden", "base": "apprentice_robe", "level": 6,
+			"stats": {"armor": 20, "max_health": 30, "resist_all": 8, "health_regen": 1.0},
+			"flavor": "Stitched by every grandmother in the village, one row each."},
+		{"id": "band_of_seven_circles", "name": "Band of Seven Circles", "base": "ring", "level": 16,
+			"stats": {"intelligence": 8, "max_resource": 25},
+			"spells": {"fireball": 1, "frost_lance": 1, "arcane_ward": 1},
+			"flavor": "Seven rings within the ring, and the innermost never stops turning."},
+		{"id": "lens_of_unmaking", "name": "Lens of Unmaking", "base": "star_lens", "level": 14,
+			"stats": {"spell_power": 15, "crit_chance": 5, "wisdom": 4},
+			"spells": {"burn_air": 2},
+			"flavor": "Through it, every word has a second meaning, and the second one burns."},
+		{"id": "stormcrown", "name": "Stormcrown", "base": "circlet", "level": 18,
+			"stats": {"resist_lightning": 30, "cast_speed": 10, "vitality": 6},
+			"spells": {"chain_lightning": 2},
+			"flavor": "The lightning that took the old man left this behind."},
+		{"id": "ley_walkers", "name": "Ley-Walkers", "base": "light_boots", "level": 9,
+			"stats": {"move_speed": 12, "resource_regen": 15, "dexterity": 4},
+			"flavor": "They always know which way the power runs."}
+	]
+}

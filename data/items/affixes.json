@@ -1,0 +1,196 @@
+{
+	"_comment": "Random traits for magic (1-2) and rare (3-5) items. Tiers of one trait share a group, so an item never rolls two. level gates by item level. categories empty = any gear. plus_spell names a random spell from spell_pools[spell_path]; on a wizard it adds 15% power per rank (WizardSpellbook.GEAR_RANK_POWER).",
+	"spell_pools": {
+		"wizard": [
+			"arcane_ward",
+			"fireball",
+			"frost_lance"
+		],
+		"wizard_variants": [
+			"fireball_searing",
+			"fireball_scattering"
+		],
+		"mage": [
+			"bind_mind",
+			"burn_air",
+			"chill_water",
+			"mend_flesh",
+			"move_metal"
+		],
+		"sorcerer": [
+			"barrier",
+			"chain_lightning",
+			"flare",
+			"overflow",
+			"shove",
+			"spark_bolt",
+			"static_field"
+		]
+	},
+	"rare_names": {
+		"first": [
+			"Ashen",
+			"Dusk",
+			"Grey",
+			"Ember",
+			"Rune",
+			"Hollow",
+			"Star",
+			"Mist",
+			"Bone",
+			"Raven",
+			"Gloom",
+			"Wyrd",
+			"Aether",
+			"Thorn",
+			"Iron",
+			"Storm",
+			"Ley",
+			"Hex",
+			"Moon",
+			"Cinder"
+		],
+		"second": {
+			"_any": [
+				"Whisper",
+				"Veil",
+				"Mark",
+				"Song",
+				"Ward",
+				"Sigil",
+				"Bane",
+				"Gaze",
+				"Oath",
+				"Secret"
+			],
+			"staff": [
+				"Spire",
+				"Branch",
+				"Pillar",
+				"Rod"
+			],
+			"wand": [
+				"Needle",
+				"Twig",
+				"Spike"
+			],
+			"hat": [
+				"Cowl",
+				"Crown",
+				"Peak",
+				"Hood"
+			],
+			"robe": [
+				"Shroud",
+				"Mantle",
+				"Wrap",
+				"Vestment"
+			],
+			"gloves": [
+				"Grasp",
+				"Touch",
+				"Fist"
+			],
+			"belt": [
+				"Cord",
+				"Clasp",
+				"Binding"
+			],
+			"boots": [
+				"Stride",
+				"Path",
+				"Road"
+			],
+			"amulet": [
+				"Heart",
+				"Charm",
+				"Eye"
+			],
+			"ring": [
+				"Coil",
+				"Loop",
+				"Band"
+			],
+			"grimoire": [
+				"Codex",
+				"Folio",
+				"Margin"
+			],
+			"lens": [
+				"Prism",
+				"Glimpse",
+				"Facet"
+			],
+			"focus": [
+				"Core",
+				"Ember",
+				"Knot"
+			]
+		}
+	},
+	"affixes": [
+		{"id": "pre_power_1", "type": "prefix", "text": "Apprentice's", "stat": "spell_power", "value": [2, 4], "level": 1, "categories": ["staff", "wand", "grimoire", "lens", "focus", "amulet", "hat"]},
+		{"id": "pre_power_2", "type": "prefix", "text": "Adept's", "stat": "spell_power", "value": [5, 8], "level": 8, "categories": ["staff", "wand", "grimoire", "lens", "focus", "amulet", "hat"]},
+		{"id": "pre_power_3", "type": "prefix", "text": "Magus's", "stat": "spell_power", "value": [9, 14], "level": 16, "categories": ["staff", "wand", "grimoire", "lens", "focus", "amulet", "hat"]},
+		{"id": "pre_power_4", "type": "prefix", "text": "Archon's", "stat": "spell_power", "value": [15, 20], "level": 24, "categories": ["staff", "wand", "grimoire", "lens", "focus", "amulet", "hat"]},
+		{"id": "pre_speed_1", "type": "prefix", "text": "Quick", "stat": "cast_speed", "value": [3, 5], "level": 1, "categories": ["wand", "staff", "gloves", "ring", "amulet"]},
+		{"id": "pre_speed_2", "type": "prefix", "text": "Swift", "stat": "cast_speed", "value": [6, 9], "level": 9, "categories": ["wand", "staff", "gloves", "ring", "amulet"]},
+		{"id": "pre_speed_3", "type": "prefix", "text": "Blurring", "stat": "cast_speed", "value": [10, 14], "level": 18, "categories": ["wand", "staff", "gloves", "ring", "amulet"]},
+		{"id": "pre_resource_1", "type": "prefix", "text": "Glowing", "stat": "max_resource", "value": [5, 10], "level": 1, "categories": ["hat", "robe", "amulet", "ring", "staff", "grimoire", "lens", "focus"]},
+		{"id": "pre_resource_2", "type": "prefix", "text": "Shining", "stat": "max_resource", "value": [11, 20], "level": 8, "categories": ["hat", "robe", "amulet", "ring", "staff", "grimoire", "lens", "focus"]},
+		{"id": "pre_resource_3", "type": "prefix", "text": "Radiant", "stat": "max_resource", "value": [21, 35], "level": 16, "categories": ["hat", "robe", "amulet", "ring", "staff", "grimoire", "lens", "focus"]},
+		{"id": "pre_armor_1", "type": "prefix", "text": "Sturdy", "stat": "armor", "value": [3, 6], "level": 1, "categories": ["hat", "robe", "gloves", "belt", "boots", "focus"]},
+		{"id": "pre_armor_2", "type": "prefix", "text": "Warded", "stat": "armor", "value": [7, 14], "level": 8, "categories": ["hat", "robe", "gloves", "belt", "boots", "focus"]},
+		{"id": "pre_armor_3", "type": "prefix", "text": "Bastion", "stat": "armor", "value": [15, 28], "level": 16, "categories": ["hat", "robe", "gloves", "belt", "boots", "focus"]},
+		{"id": "pre_res_fire_1", "type": "prefix", "text": "Crimson", "stat": "resist_fire", "value": [5, 12], "level": 3, "categories": ["hat", "robe", "gloves", "belt", "boots", "amulet", "ring", "grimoire", "lens", "focus"], "weight": 8},
+		{"id": "pre_res_fire_2", "type": "prefix", "text": "Garnet", "stat": "resist_fire", "value": [13, 25], "level": 14, "categories": ["hat", "robe", "gloves", "belt", "boots", "amulet", "ring", "grimoire", "lens", "focus"], "weight": 6},
+		{"id": "pre_res_cold_1", "type": "prefix", "text": "Azure", "stat": "resist_cold", "value": [5, 12], "level": 3, "categories": ["hat", "robe", "gloves", "belt", "boots", "amulet", "ring", "grimoire", "lens", "focus"], "weight": 8},
+		{"id": "pre_res_cold_2", "type": "prefix", "text": "Sapphire", "stat": "resist_cold", "value": [13, 25], "level": 14, "categories": ["hat", "robe", "gloves", "belt", "boots", "amulet", "ring", "grimoire", "lens", "focus"], "weight": 6},
+		{"id": "pre_res_lightning_1", "type": "prefix", "text": "Amber", "stat": "resist_lightning", "value": [5, 12], "level": 3, "categories": ["hat", "robe", "gloves", "belt", "boots", "amulet", "ring", "grimoire", "lens", "focus"], "weight": 8},
+		{"id": "pre_res_lightning_2", "type": "prefix", "text": "Topaz", "stat": "resist_lightning", "value": [13, 25], "level": 14, "categories": ["hat", "robe", "gloves", "belt", "boots", "amulet", "ring", "grimoire", "lens", "focus"], "weight": 6},
+		{"id": "pre_res_arcane_1", "type": "prefix", "text": "Violet", "stat": "resist_arcane", "value": [5, 12], "level": 3, "categories": ["hat", "robe", "gloves", "belt", "boots", "amulet", "ring", "grimoire", "lens", "focus"], "weight": 8},
+		{"id": "pre_res_arcane_2", "type": "prefix", "text": "Amethyst", "stat": "resist_arcane", "value": [13, 25], "level": 14, "categories": ["hat", "robe", "gloves", "belt", "boots", "amulet", "ring", "grimoire", "lens", "focus"], "weight": 6},
+		{"id": "pre_res_mind_1", "type": "prefix", "text": "Pale", "stat": "resist_mind", "value": [5, 12], "level": 3, "categories": ["hat", "robe", "gloves", "belt", "boots", "amulet", "ring", "grimoire", "lens", "focus"], "weight": 8},
+		{"id": "pre_res_mind_2", "type": "prefix", "text": "Pearl", "stat": "resist_mind", "value": [13, 25], "level": 14, "categories": ["hat", "robe", "gloves", "belt", "boots", "amulet", "ring", "grimoire", "lens", "focus"], "weight": 6},
+		{"id": "pre_res_all_1", "type": "prefix", "text": "Prismatic", "stat": "resist_all", "value": [4, 8], "level": 12, "categories": ["amulet", "ring", "robe", "grimoire", "lens", "focus"], "weight": 4},
+		{"id": "pre_crit_1", "type": "prefix", "text": "Keen", "stat": "crit_chance", "value": [1, 2], "level": 4, "categories": ["wand", "staff", "ring", "gloves"]},
+		{"id": "pre_crit_2", "type": "prefix", "text": "Piercing", "stat": "crit_chance", "value": [3, 4], "level": 14, "categories": ["wand", "staff", "ring", "gloves"], "weight": 6},
+		{"id": "pre_force_1", "type": "prefix", "text": "Heavy", "stat": "force_power", "value": [5, 10], "level": 1, "categories": ["staff"]},
+		{"id": "pre_force_2", "type": "prefix", "text": "Crushing", "stat": "force_power", "value": [11, 20], "level": 12, "categories": ["staff", "gloves"], "weight": 6},
+		{"id": "pre_skill_wizard_1", "type": "prefix", "text": "Scholar's", "stat": "plus_spell", "value": [1, 1], "level": 6, "categories": ["staff", "grimoire", "amulet", "hat"], "weight": 5, "group": "plus_spell", "spell_path": "wizard"},
+		{"id": "pre_skill_wizard_2", "type": "prefix", "text": "Sage's", "stat": "plus_spell", "value": [2, 2], "level": 18, "categories": ["staff", "grimoire", "amulet", "hat"], "weight": 2, "group": "plus_spell", "spell_path": "wizard"},
+		{"id": "pre_skill_mage_1", "type": "prefix", "text": "Wordsmith's", "stat": "plus_spell", "value": [1, 1], "level": 6, "categories": ["staff", "lens", "amulet", "hat"], "weight": 5, "group": "plus_spell", "spell_path": "mage"},
+		{"id": "pre_skill_mage_2", "type": "prefix", "text": "Lexicant's", "stat": "plus_spell", "value": [2, 2], "level": 18, "categories": ["staff", "lens", "amulet", "hat"], "weight": 2, "group": "plus_spell", "spell_path": "mage"},
+		{"id": "pre_skill_sorcerer_1", "type": "prefix", "text": "Stormcaller's", "stat": "plus_spell", "value": [1, 1], "level": 6, "categories": ["staff", "wand", "focus", "amulet"], "weight": 5, "group": "plus_spell", "spell_path": "sorcerer"},
+		{"id": "pre_skill_sorcerer_2", "type": "prefix", "text": "Tempest's", "stat": "plus_spell", "value": [2, 2], "level": 18, "categories": ["staff", "wand", "focus", "amulet"], "weight": 2, "group": "plus_spell", "spell_path": "sorcerer"},
+		{"id": "suf_strength_1", "type": "suffix", "text": "of Strength", "stat": "strength", "value": [1, 3], "level": 1},
+		{"id": "suf_strength_2", "type": "suffix", "text": "of Might", "stat": "strength", "value": [4, 6], "level": 8},
+		{"id": "suf_strength_3", "type": "suffix", "text": "of the Giant", "stat": "strength", "value": [7, 10], "level": 16},
+		{"id": "suf_vitality_1", "type": "suffix", "text": "of the Ox", "stat": "vitality", "value": [1, 3], "level": 1},
+		{"id": "suf_vitality_2", "type": "suffix", "text": "of the Bear", "stat": "vitality", "value": [4, 6], "level": 8},
+		{"id": "suf_vitality_3", "type": "suffix", "text": "of the Mammoth", "stat": "vitality", "value": [7, 10], "level": 16},
+		{"id": "suf_dexterity_1", "type": "suffix", "text": "of the Fox", "stat": "dexterity", "value": [1, 3], "level": 1},
+		{"id": "suf_dexterity_2", "type": "suffix", "text": "of the Hawk", "stat": "dexterity", "value": [4, 6], "level": 8},
+		{"id": "suf_dexterity_3", "type": "suffix", "text": "of the Wind", "stat": "dexterity", "value": [7, 10], "level": 16},
+		{"id": "suf_intelligence_1", "type": "suffix", "text": "of the Owl", "stat": "intelligence", "value": [1, 3], "level": 1},
+		{"id": "suf_intelligence_2", "type": "suffix", "text": "of the Sage", "stat": "intelligence", "value": [4, 6], "level": 8},
+		{"id": "suf_intelligence_3", "type": "suffix", "text": "of the Archive", "stat": "intelligence", "value": [7, 10], "level": 16},
+		{"id": "suf_wisdom_1", "type": "suffix", "text": "of Calm", "stat": "wisdom", "value": [1, 3], "level": 1},
+		{"id": "suf_wisdom_2", "type": "suffix", "text": "of Insight", "stat": "wisdom", "value": [4, 6], "level": 8},
+		{"id": "suf_wisdom_3", "type": "suffix", "text": "of the Oracle", "stat": "wisdom", "value": [7, 10], "level": 16},
+		{"id": "suf_all_attr", "type": "suffix", "text": "of the Arcanist", "stat": "all_attributes", "value": [1, 3], "level": 14, "categories": ["amulet", "ring"], "weight": 3},
+		{"id": "suf_life_1", "type": "suffix", "text": "of Life", "stat": "max_health", "value": [5, 15], "level": 1, "categories": ["hat", "robe", "gloves", "belt", "boots", "amulet", "ring", "focus", "staff"]},
+		{"id": "suf_life_2", "type": "suffix", "text": "of the Hearth", "stat": "max_health", "value": [16, 30], "level": 10, "categories": ["hat", "robe", "gloves", "belt", "boots", "amulet", "ring", "focus", "staff"]},
+		{"id": "suf_life_3", "type": "suffix", "text": "of Vitae", "stat": "max_health", "value": [31, 50], "level": 20, "categories": ["hat", "robe", "gloves", "belt", "boots", "amulet", "ring", "focus", "staff"]},
+		{"id": "suf_regen_1", "type": "suffix", "text": "of Mending", "stat": "health_regen", "value": [0.5, 1.5], "level": 3, "categories": ["hat", "robe", "gloves", "belt", "boots", "amulet", "ring", "focus"]},
+		{"id": "suf_res_regen_1", "type": "suffix", "text": "of the Spring", "stat": "resource_regen", "value": [5, 10], "level": 1, "categories": ["robe", "hat", "amulet", "ring", "staff", "grimoire", "lens", "focus"]},
+		{"id": "suf_res_regen_2", "type": "suffix", "text": "of the Ley", "stat": "resource_regen", "value": [11, 20], "level": 10, "categories": ["robe", "hat", "amulet", "ring", "staff", "grimoire", "lens", "focus"], "weight": 6},
+		{"id": "suf_critdmg_1", "type": "suffix", "text": "of Ruin", "stat": "crit_damage", "value": [5, 10], "level": 5, "categories": ["staff", "wand", "gloves", "amulet", "ring", "grimoire", "lens", "focus"]},
+		{"id": "suf_critdmg_2", "type": "suffix", "text": "of Devastation", "stat": "crit_damage", "value": [11, 20], "level": 16, "categories": ["staff", "wand", "gloves", "amulet", "ring", "grimoire", "lens", "focus"], "weight": 6},
+		{"id": "suf_move_1", "type": "suffix", "text": "of Haste", "stat": "move_speed", "value": [3, 6], "level": 4, "categories": ["boots"]},
+		{"id": "suf_move_2", "type": "suffix", "text": "of the Gale", "stat": "move_speed", "value": [7, 12], "level": 14, "categories": ["boots"], "weight": 6},
+		{"id": "suf_mf_1", "type": "suffix", "text": "of Fortune", "stat": "magic_find", "value": [5, 12], "level": 3, "categories": ["ring", "amulet", "hat"], "weight": 6},
+		{"id": "suf_mf_2", "type": "suffix", "text": "of the Magpie", "stat": "magic_find", "value": [13, 25], "level": 15, "categories": ["ring", "amulet", "hat"], "weight": 3},
+		{"id": "suf_gold_1", "type": "suffix", "text": "of Greed", "stat": "gold_find", "value": [10, 30], "level": 1, "categories": ["ring", "amulet", "gloves", "belt"], "weight": 6}
+	]
+}
