@@ -2,11 +2,28 @@
 
 A third-person action RPG about an arcanist and their journey through magic and life, built in Godot 4.7.
 
-![Movement prototype](docs/prototype-movement.png)
+![The meadow at spawn](docs/world-spawn.png)
 
-## Current state: movement and camera prototype
+## Current state: the meadow
 
-A greybox test level with a third-person arcanist who can run, jump and dodge.
+The main scene (`scenes/world/world.tscn`) is a procedurally generated stylized meadow, built from a fixed seed so it's the same every run:
+
+- **Terrain** (`scenes/world/terrain.gd`): rolling hills, a central hill with a flat top, a pond bowl, dirt trails and a ring of mountains that keeps the player in bounds. Grass, dirt, banks and rock are shaded by `materials/terrain.gdshader`.
+- **Vegetation** (`scenes/world/vegetation.gd`): about 850 broadleaf and pine trees in forest patches, boulders and pebbles, wind-blown grass in chunks that fade out with distance, and wildflower patches. Meshes come from `scenes/world/mesh_factory.gd`.
+- **Landmarks** (`scenes/world/landmarks.gd`): the pond with stepping stones, a ruined stone circle with a floating crystal on the hilltop, and broken blocks along the trail.
+- **Sky** (`materials/sky.gdshader`): dusk gradient, sun glow and drifting clouds, with fog for depth.
+
+| Pond | Hilltop ruins |
+| --- | --- |
+| ![Pond](docs/world-pond.png) | ![Ruins](docs/world-ruins.png) |
+
+The terrain, trees and ruins are `@tool` scripts, so they also generate inside the editor. Change the exported values (seed, hill height, tree count and so on) on the Terrain, Vegetation and Landmarks nodes to reshape the world.
+
+## Movement test level
+
+`scenes/greybox_test.tscn` is the original greybox level for tuning movement.
+
+### Greybox areas
 
 | Area | What it tests |
 | --- | --- |
@@ -45,7 +62,8 @@ godot --headless --path . --script res://tests/smoke_test.gd
 
 ## Layout
 
-- `scenes/main.tscn` wires together the environment, level, player and HUD.
+- `scenes/world/` is the meadow and its generators.
+- `scenes/greybox_test.tscn` is the movement test level.
 - `scenes/player/` holds the arcanist controller and its placeholder model.
 - `scenes/levels/greybox.tscn` is the CSG test level.
 - `scenes/ui/` is the debug HUD.

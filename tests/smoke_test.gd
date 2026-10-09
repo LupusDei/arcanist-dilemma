@@ -10,7 +10,7 @@ func _initialize() -> void:
 
 
 func _run() -> void:
-	var main: Node = load("res://scenes/main.tscn").instantiate()
+	var main: Node = load("res://scenes/greybox_test.tscn").instantiate()
 	root.add_child(main)
 	var player: Player = main.get_node("Player")
 
@@ -49,6 +49,10 @@ func _run() -> void:
 	await _frames(2)
 	_check(player.global_position.y > -1.0, "falling out of the world respawns")
 
+	main.queue_free()
+	await _frames(2)
+	await _check_world()
+
 	if _failures.is_empty():
 		print("SMOKE TEST PASSED")
 		quit(0)
@@ -56,6 +60,25 @@ func _run() -> void:
 		for f in _failures:
 			printerr("FAIL: ", f)
 		quit(1)
+
+
+func _check_world() -> void:
+	var start := Time.get_ticks_msec()
+	var world: Node = load("res://scenes/world/world.tscn").instantiate()
+	root.add_child(world)
+	print("     world generated in %d ms" % (Time.get_ticks_msec() - start))
+	var player: Player = world.get_node("Player")
+	var terrain: Terrain = world.get_node("Terrain")
+	await _frames(90)
+	_check(player.is_on_floor(), "player stands on the terrain")
+	_check(absf(player.global_position.y - terrain.height_at(player.global_position.x, player.global_position.z)) < 0.3, "terrain collision matches the terrain mesh")
+	var trees := 0
+	for instance in world.get_node("Vegetation/Trees").get_children():
+		trees += (instance as MultiMeshInstance3D).multimesh.instance_count
+	print("     %d trees" % trees)
+	_check(trees > 200, "trees are scattered")
+	_check(world.get_node("Vegetation/Grass").get_child_count() > 20, "grass chunks are built")
+	_check(world.get_node("Landmarks/Crystal") != null, "hilltop crystal exists")
 
 
 func _frames(count: int) -> void:

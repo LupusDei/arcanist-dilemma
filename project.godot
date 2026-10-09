@@ -11,8 +11,8 @@ config_version=5
 [application]
 
 config/name="Arcanist's Dilemma"
-config/description="Third-person action RPG about an arcanist. Movement and camera prototype."
-run/main_scene="res://scenes/main.tscn"
+config/description="Third-person action RPG about an arcanist."
+run/main_scene="res://scenes/world/world.tscn"
 config/features=PackedStringArray("4.7", "Forward Plus")
 
 [display]
