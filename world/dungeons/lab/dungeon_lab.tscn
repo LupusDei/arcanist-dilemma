@@ -1,0 +1,49 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://world/dungeons/lab/dungeon_lab.gd" id="1_lab"]
+
+[sub_resource type="Environment" id="Environment_lab"]
+background_mode = 1
+background_color = Color(0.05, 0.045, 0.05, 1)
+ambient_light_source = 2
+ambient_light_color = Color(0.42, 0.4, 0.48, 1)
+ambient_light_energy = 0.9
+tonemap_mode = 2
+tonemap_white = 4.0
+ssao_enabled = true
+glow_enabled = true
+glow_intensity = 0.6
+glow_bloom = 0.1
+
+[node name="DungeonLab" type="Node3D"]
+script = ExtResource("1_lab")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_lab")
+
+[node name="Moon" type="DirectionalLight3D" parent="."]
+rotation = Vector3(-1.1, 0.5, 0)
+light_color = Color(0.62, 0.66, 0.85, 1)
+light_energy = 0.6
+shadow_enabled = true
+directional_shadow_max_distance = 250.0
+
+[node name="CameraPivot" type="Node3D" parent="."]
+rotation = Vector3(-1.05, 0.5, 0)
+
+[node name="Camera3D" type="Camera3D" parent="CameraPivot"]
+position = Vector3(0, 0, 90)
+current = true
+fov = 50.0
+far = 1000.0
+
+[node name="UI" type="CanvasLayer" parent="."]
+
+[node name="InfoLabel" type="Label" parent="UI"]
+unique_name_in_owner = true
+offset_left = 16.0
+offset_top = 12.0
+offset_right = 1500.0
+offset_bottom = 140.0
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 6

@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="DungeonRecipe" format=3]
+
+[ext_resource type="Script" path="res://world/dungeons/dungeon_recipe.gd" id="1_recipe"]
+
+[resource]
+script = ExtResource("1_recipe")
+display_name = "Ironpeaks Mine"
+style = 2
+biome = &"dungeon"
+level_min = 8
+level_max = 10
+critical_min = 4
+critical_max = 6
+side_min = 1
+side_max = 3
+locks = 2
+corridor_min = 1
+corridor_max = 4
+templates = PackedStringArray("cavern", "cavern", "hall", "pillared")
+threat_per_level = 6.0
+boss_multiplier = 3.0
+chests_min = 3
+chests_max = 5
+story_rooms = PackedStringArray("whispering_statue")
+wall_color = Color(0.45, 0.38, 0.32, 1)
+floor_color = Color(0.33, 0.27, 0.22, 1)
+trim_color = Color(0.4, 0.26, 0.15, 1)
+wood_color = Color(0.48, 0.31, 0.17, 1)
+accent_color = Color(0.55, 0.8, 1, 1)
+light_color = Color(1, 0.76, 0.48, 1)

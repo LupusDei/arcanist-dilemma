@@ -1,0 +1,28 @@
+[gd_resource type="Resource" script_class="DungeonRecipe" format=3]
+
+[ext_resource type="Script" path="res://world/dungeons/dungeon_recipe.gd" id="1_recipe"]
+
+[resource]
+script = ExtResource("1_recipe")
+display_name = "Ruined Crypt"
+style = 0
+biome = &"dungeon"
+level_min = 1
+level_max = 3
+critical_min = 3
+critical_max = 5
+side_min = 1
+side_max = 3
+locks = 1
+corridor_min = 1
+corridor_max = 3
+templates = PackedStringArray("hall", "pillared", "ossuary", "ossuary")
+threat_per_level = 6.0
+boss_multiplier = 2.5
+chests_min = 2
+chests_max = 4
+wall_color = Color(0.52, 0.49, 0.45, 1)
+floor_color = Color(0.36, 0.33, 0.3, 1)
+trim_color = Color(0.3, 0.27, 0.24, 1)
+accent_color = Color(1, 0.62, 0.3, 1)
+light_color = Color(1, 0.7, 0.42, 1)

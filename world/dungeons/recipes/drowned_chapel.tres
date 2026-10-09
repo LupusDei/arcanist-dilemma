@@ -1,0 +1,32 @@
+[gd_resource type="Resource" script_class="DungeonRecipe" format=3]
+
+[ext_resource type="Script" path="res://world/dungeons/dungeon_recipe.gd" id="1_recipe"]
+
+[resource]
+script = ExtResource("1_recipe")
+display_name = "Drowned Chapel"
+style = 1
+biome = &"dungeon"
+level_min = 3
+level_max = 5
+critical_min = 3
+critical_max = 4
+side_min = 1
+side_max = 2
+locks = 1
+corridor_min = 1
+corridor_max = 2
+templates = PackedStringArray("pews", "flooded", "flooded", "hall")
+threat_per_level = 5.0
+boss_multiplier = 2.5
+chests_min = 2
+chests_max = 3
+story_rooms = PackedStringArray("scribe_ghost")
+reward_marker = "spellbook_page"
+wall_color = Color(0.46, 0.5, 0.46, 1)
+floor_color = Color(0.3, 0.34, 0.3, 1)
+trim_color = Color(0.28, 0.32, 0.3, 1)
+wood_color = Color(0.32, 0.22, 0.15, 1)
+accent_color = Color(0.45, 0.85, 1, 1)
+water_color = Color(0.18, 0.4, 0.42, 0.7)
+light_color = Color(0.8, 0.92, 1, 1)
