@@ -7,6 +7,7 @@ const BRUTE := preload("res://actors/enemies/types/bramble_brute.tscn")
 const HEXLING := preload("res://actors/enemies/types/hexling.tscn")
 const HOUND := preload("res://actors/enemies/types/gloom_hound.tscn")
 const ARENA := preload("res://actors/enemies/arena/enemy_arena.tscn")
+const SPAWN_TABLE := preload("res://actors/enemies/types/default_spawn_table.tres")
 
 var _failures: PackedStringArray = []
 
@@ -39,6 +40,9 @@ func _run() -> void:
 	await _test_pack_alert()
 	await _test_death_loot_and_spawner()
 	await _test_leash()
+	await _test_levels_and_elites()
+	_test_spawn_plan()
+	await _test_populate()
 	await _test_arena()
 
 	if _failures.is_empty():
@@ -289,8 +293,116 @@ func _test_arena() -> void:
 	_check(absf(brute.global_position.x) > 7.0 or brute.global_position.z > -4.0, "brute went around the wall, not into it (%s)" % brute.global_position)
 
 	arena.nova()
-	await _frames(2)
+	var generated: Array[EnemySpawner] = arena.generate(42)
+	await _frames(10)
+	_check(not generated.is_empty() and generated.all(func(sp: EnemySpawner) -> bool: return not sp.alive.is_empty()), "arena can swap in a generated population (%d groups)" % generated.size())
 	await _free({"root": arena})
+
+
+# --- Levels and procedural population ----------------------------------------
+
+func _test_levels_and_elites() -> void:
+	print("-- levels and elites")
+	var w := await _world(Vector3(0, 0, 40))
+	var normal := BRUTE.instantiate() as Enemy
+	normal.level = 5
+	w.root.add_child(normal)
+	var elite := BRUTE.instantiate() as Enemy
+	elite.level = 5
+	elite.elite = true
+	elite.position = Vector3(6, 0, 0)
+	w.root.add_child(elite)
+	await _frames(2)
+	_check(is_equal_approx(normal.max_health, 120.0 * 1.48), "level 5 brute has +48%% health (%.1f)" % normal.max_health)
+	_check(normal.xp_value == 40, "level 5 brute gives more xp (%d)" % normal.xp_value)
+	_check(is_equal_approx(elite.max_health, normal.max_health * 2.5), "elite has 2.5x health")
+	_check(elite.xp_value == normal.xp_value * 3, "elite gives 3x xp")
+	_check(elite.get_node_or_null("ModelRoot") != null and elite.get_node("ModelRoot").scale.x > 1.2, "elite is drawn bigger")
+	_check(elite.display_title() == "Elite Bramble Brute (Lv 5)", "elite title (%s)" % elite.display_title())
+	await _free(w)
+
+
+func _request(area_seed: int, biome: StringName, level_min := 1, level_max := 3) -> EnemySpawnRequest:
+	var request := EnemySpawnRequest.new()
+	request.area_seed = area_seed
+	request.biome = biome
+	request.level_min = level_min
+	request.level_max = level_max
+	request.area_center = Vector3(100, 0, -50)
+	request.area_size = Vector2(100, 80)
+	request.density = 2.0
+	request.min_spacing = 8.0
+	request.elite_chance = 0.2
+	request.exclusion_zones = PackedVector3Array([Vector3(100, -50, 15)])
+	return request
+
+
+func _summary(groups: Array[Dictionary]) -> Array:
+	return groups.map(func(g: Dictionary) -> Array: return [g["scene"].resource_path, g["position"], g["count"], g["level"], g["elite"], g["seed"]])
+
+
+func _test_spawn_plan() -> void:
+	print("-- spawn plan")
+	var request := _request(1234, &"forest")
+	var first := SPAWN_TABLE.plan(request)
+	_check(first.size() == 16, "density 2 on 8000 m2 gives 16 groups (%d)" % first.size())
+	_check(_summary(first) == _summary(SPAWN_TABLE.plan(request)), "same seed gives the same monsters in the same places")
+	_check(_summary(first) != _summary(SPAWN_TABLE.plan(_request(99, &"forest"))), "a different seed gives a different layout")
+
+	var inside := true
+	var spaced := true
+	var excluded := true
+	var levels_ok := true
+	for i in first.size():
+		var p: Vector3 = first[i]["position"]
+		inside = inside and absf(p.x - 100) <= 50 and absf(p.z + 50) <= 40
+		excluded = excluded and Vector2(p.x - 100, p.z + 50).length() >= 15.0
+		levels_ok = levels_ok and first[i]["level"] >= 1 and first[i]["level"] <= 3
+		for j in range(i + 1, first.size()):
+			var q: Vector3 = first[j]["position"]
+			spaced = spaced and Vector2(p.x - q.x, p.z - q.z).length() >= 8.0
+	_check(inside, "every group is inside the area")
+	_check(spaced, "groups keep their minimum spacing")
+	_check(excluded, "nothing spawns in an exclusion zone")
+	_check(levels_ok, "levels stay in the requested range")
+
+	var meadow := SPAWN_TABLE.plan(_request(5, &"meadow", 1, 1))
+	_check(not meadow.is_empty() and meadow.all(func(g: Dictionary) -> bool: return g["scene"] == HOUND), "a level 1 meadow only has hound packs")
+	var dungeon := SPAWN_TABLE.plan(_request(5, &"dungeon", 4, 6))
+	_check(not dungeon.is_empty() and dungeon.all(func(g: Dictionary) -> bool: return g["scene"] != HOUND), "dungeons have no hounds")
+	_check(dungeon.any(func(g: Dictionary) -> bool: return g["scene"] == BRUTE) and dungeon.any(func(g: Dictionary) -> bool: return g["scene"] == HEXLING), "dungeons mix brutes and hexlings")
+	var sparse := _request(5, &"forest")
+	sparse.density = 0.5
+	_check(SPAWN_TABLE.plan(sparse).size() == 4, "lower density gives fewer groups")
+	_check(SPAWN_TABLE.plan(_request(5, &"swamp")).size() == 0, "an unknown biome gets nothing rather than wrong monsters")
+
+
+func _test_populate() -> void:
+	print("-- populate")
+	var w := await _world(Vector3(0, 0, 0))
+	var request := _request(77, &"ruins", 2, 4)
+	request.area_center = Vector3.ZERO
+	request.area_size = Vector2(80, 80)
+	request.exclusion_zones = PackedVector3Array([Vector3(0, 0, 20)])
+	var holder := Node3D.new()
+	w.root.add_child(holder)
+	var spawners := EnemyPopulator.populate(holder, SPAWN_TABLE, request, func(_x: float, _z: float) -> float: return 0.0)
+	await _frames(5)
+	var planned := SPAWN_TABLE.plan(request)
+	_check(spawners.size() == planned.size() and spawners.size() > 0, "one spawner per planned group (%d)" % spawners.size())
+	var counts_ok := true
+	var levels_ok := true
+	var total := 0
+	for i in spawners.size():
+		counts_ok = counts_ok and spawners[i].alive.size() == planned[i]["count"]
+		for enemy in spawners[i].alive:
+			total += 1
+			levels_ok = levels_ok and enemy.level == planned[i]["level"]
+	_check(counts_ok, "each spawner fills its group (%d monsters)" % total)
+	_check(levels_ok, "spawned monsters carry the planned level")
+	var all_idle := get_nodes_in_group(Enemy.ENEMY_GROUP).all(func(e: Enemy) -> bool: return e.state == Enemy.State.IDLE)
+	_check(all_idle, "the exclusion zone keeps the player out of aggro range")
+	await _free(w)
 
 
 # --- Helpers ------------------------------------------------------------------

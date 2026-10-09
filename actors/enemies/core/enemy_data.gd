@@ -51,3 +51,13 @@ enum AttackStyle { MELEE, RANGED }
 
 @export_group("Loot")
 @export var loot_table: EnemyLootTable
+
+@export_group("Scaling")
+## Fraction added per level above 1, e.g. 0.12 = +12% health per level.
+@export var health_per_level := 0.12
+@export var damage_per_level := 0.08
+@export var xp_per_level := 0.15
+@export var elite_health_multiplier := 2.5
+@export var elite_damage_multiplier := 1.4
+@export var elite_xp_multiplier := 3
+@export var elite_model_scale := 1.3

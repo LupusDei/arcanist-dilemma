@@ -1,0 +1,44 @@
+[gd_resource type="Resource" script_class="EnemySpawnTable" format=3]
+
+[ext_resource type="Script" path="res://actors/enemies/core/enemy_spawn_table.gd" id="1_table"]
+[ext_resource type="Script" path="res://actors/enemies/core/enemy_spawn_entry.gd" id="2_entry"]
+[ext_resource type="PackedScene" path="res://actors/enemies/types/gloom_hound.tscn" id="3_gloom_hound"]
+[ext_resource type="PackedScene" path="res://actors/enemies/types/bramble_brute.tscn" id="4_bramble_brute"]
+[ext_resource type="PackedScene" path="res://actors/enemies/types/hexling.tscn" id="5_hexling"]
+
+[sub_resource type="Resource" id="Entry_hounds"]
+script = ExtResource("2_entry")
+enemy_scene = ExtResource("3_gloom_hound")
+weight = 3.0
+biomes = Array[StringName]([&"meadow", &"forest"])
+min_level = 1
+max_level = 60
+group_min = 3
+group_max = 5
+spawn_radius = 3.0
+
+[sub_resource type="Resource" id="Entry_brutes"]
+script = ExtResource("2_entry")
+enemy_scene = ExtResource("4_bramble_brute")
+weight = 2.0
+biomes = Array[StringName]([&"meadow", &"forest", &"ruins", &"dungeon"])
+min_level = 2
+max_level = 60
+group_min = 1
+group_max = 2
+spawn_radius = 2.5
+
+[sub_resource type="Resource" id="Entry_hexlings"]
+script = ExtResource("2_entry")
+enemy_scene = ExtResource("5_hexling")
+weight = 2.0
+biomes = Array[StringName]([&"forest", &"ruins", &"dungeon"])
+min_level = 1
+max_level = 60
+group_min = 1
+group_max = 3
+spawn_radius = 2.5
+
+[resource]
+script = ExtResource("1_table")
+entries = Array[ExtResource("2_entry")]([SubResource("Entry_hounds"), SubResource("Entry_brutes"), SubResource("Entry_hexlings")])

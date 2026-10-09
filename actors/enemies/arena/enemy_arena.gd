@@ -10,6 +10,8 @@ const BOLT_DAMAGE := 20.0
 const NOVA_DAMAGE := 12.0
 const NOVA_RADIUS := 5.0
 const PLAYER_MAX_HEALTH := 150.0
+const SPAWN_TABLE := preload("res://actors/enemies/types/default_spawn_table.tres")
+const BIOMES: Array[StringName] = [&"meadow", &"forest", &"ruins", &"dungeon"]
 
 var kills := 0
 var xp := 0
@@ -20,6 +22,8 @@ var _player_health: EnemyHealth
 var _label: Label
 var _message := ""
 var _message_time := 0.0
+var _generation := 0
+var _generated: Node3D
 
 @onready var _navigation: NavigationRegion3D = $NavigationRegion3D
 
@@ -53,6 +57,8 @@ func _unhandled_input(event: InputEvent) -> void:
 		fire_bolt()
 	elif event is InputEventKey and event.pressed and not event.echo and event.physical_keycode == KEY_G:
 		nova()
+	elif event is InputEventKey and event.pressed and not event.echo and event.physical_keycode == KEY_N:
+		generate(randi())
 
 
 ## Debug attack: a bolt at the closest enemy in front of the camera.
@@ -79,10 +85,32 @@ func nova() -> void:
 	_flash("Nova!")
 
 
+## Replaces the hand-placed camps with a population rolled from the default
+## spawn table, cycling through biomes, the way a world generator would.
+func generate(area_seed: int) -> Array[EnemySpawner]:
+	for child in get_children():
+		if child is EnemySpawner:
+			child.queue_free()
+	var request := EnemySpawnRequest.new()
+	request.area_seed = area_seed
+	request.biome = BIOMES[_generation % BIOMES.size()]
+	request.level_min = 1 + _generation
+	request.level_max = 3 + _generation
+	request.area_size = Vector2(44, 44)
+	request.density = 4.0
+	request.min_spacing = 9.0
+	request.elite_chance = 0.25
+	request.exclusion_zones = PackedVector3Array([Vector3(_player.global_position.x, _player.global_position.z, 10.0)])
+	_generation += 1
+	var spawners := EnemyPopulator.populate(self, SPAWN_TABLE, request)
+	_flash("Generated %d groups: %s, levels %d-%d" % [spawners.size(), request.biome, request.level_min, request.level_max])
+	return spawners
+
+
 func on_enemy_died(enemy: Enemy, xp_value: int, _loot: Array[Dictionary]) -> void:
 	kills += 1
 	xp += xp_value
-	_flash("%s slain  +%d XP" % [enemy.data.display_name, xp_value])
+	_flash("%s slain  +%d XP" % [enemy.display_title(), xp_value])
 
 
 func on_loot_collected(loot: Array[Dictionary], _collector: Node3D) -> void:
@@ -103,7 +131,7 @@ func _process(delta: float) -> void:
 	var hp := "-"
 	if _player_health != null:
 		hp = "%d / %d" % [ceili(_player_health.current_health), ceili(_player_health.max_health)]
-	_label.text = "ENEMY ARENA\nHP %s    XP %d    Kills %d\nLoot: %s\n\nF / left click: arcane bolt    G: nova    Esc: free mouse\n%s" % [
+	_label.text = "ENEMY ARENA\nHP %s    XP %d    Kills %d\nLoot: %s\n\nF / left click: arcane bolt    G: nova    N: generate new monsters    Esc: free mouse\n%s" % [
 		hp, xp, kills, ", ".join(loot_parts) if not loot_parts.is_empty() else "none",
 		_message if _message_time > 0.0 else ""]
 

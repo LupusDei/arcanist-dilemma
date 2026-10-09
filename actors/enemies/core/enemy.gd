@@ -34,6 +34,10 @@ const LOOT_DROP_SCENE := preload("res://actors/enemies/core/enemy_loot_drop.tscn
 ## Enemies with the same non-zero pack id alert each other. Spawners set it.
 @export var pack_id := 0
 @export var drop_loot := true
+## Monster level; health, damage and XP grow with it (see EnemyData's Scaling group).
+@export_range(1, 60) var level := 1
+## Elites are bigger and tougher and give more XP and loot.
+@export var elite := false
 @export var show_debug_label := true
 
 var state: State = State.IDLE
@@ -41,6 +45,10 @@ var target: Node3D
 var home_position: Vector3
 var health_current := 0.0
 var health_max := 0.0
+## Level- and elite-scaled values, set in _ready. Use these, not the raw data.
+var max_health := 0.0
+var attack_damage := 0.0
+var xp_value := 0
 var rng := RandomNumberGenerator.new()
 
 var _state_time := 0.0
@@ -70,13 +78,16 @@ func _ready() -> void:
 	_wander_point = home_position
 	_wander_wait = rng.randf_range(0.0, data.wander_pause_max)
 
-	health.set("max_health", data.max_health)
+	_apply_scaling()
+	health.set("max_health", max_health)
 	health.set("armor", data.armor)
+	if elite:
+		health.set("tier", 1) # HealthComponent tier ELITE
 	health.set("team", &"enemy")
 	if health.has_method("reset"):
 		health.reset()
-	health_current = data.max_health
-	health_max = data.max_health
+	health_current = max_health
+	health_max = max_health
 	health.health_changed.connect(_on_health_changed)
 	health.damaged.connect(_on_damaged)
 	health.died.connect(_on_died)
@@ -249,10 +260,10 @@ func _resolve_attack() -> void:
 		return
 	if data.attack_style == EnemyData.AttackStyle.RANGED:
 		_fire_projectile()
-		attacked.emit(target, data.attack_damage)
+		attacked.emit(target, attack_damage)
 	elif distance_to_target() <= data.attack_range + 0.6:
-		if EnemyDamage.apply(target, data.attack_damage, self):
-			attacked.emit(target, data.attack_damage)
+		if EnemyDamage.apply(target, attack_damage, self):
+			attacked.emit(target, attack_damage)
 
 
 func _fire_projectile() -> void:
@@ -263,7 +274,7 @@ func _fire_projectile() -> void:
 	get_parent().add_child(projectile)
 	var from := _muzzle.global_position if _muzzle else global_position + Vector3.UP * 1.2
 	var aim := target.global_position + Vector3.UP * 1.0
-	projectile.launch(from, aim, self, data.attack_damage, data.projectile_speed)
+	projectile.launch(from, aim, self, attack_damage, data.projectile_speed)
 
 
 func _alert_pack() -> void:
@@ -321,8 +332,10 @@ func _on_died(_killer: Node) -> void:
 	var loot: Array[Dictionary] = []
 	if data.loot_table != null:
 		loot = data.loot_table.roll(rng)
-	died.emit(self, data.xp_value, loot)
-	get_tree().call_group(LISTENER_GROUP, "on_enemy_died", self, data.xp_value, loot)
+		if elite:
+			loot.append_array(data.loot_table.roll(rng))
+	died.emit(self, xp_value, loot)
+	get_tree().call_group(LISTENER_GROUP, "on_enemy_died", self, xp_value, loot)
 	if drop_loot and not loot.is_empty() and get_parent() != null:
 		var drop := LOOT_DROP_SCENE.instantiate() as EnemyLootDrop
 		drop.loot = loot
@@ -332,6 +345,39 @@ func _on_died(_killer: Node) -> void:
 
 
 # --- Helpers ----------------------------------------------------------------
+
+func _apply_scaling() -> void:
+	var steps := float(level - 1)
+	max_health = data.max_health * (1.0 + data.health_per_level * steps)
+	attack_damage = data.attack_damage * (1.0 + data.damage_per_level * steps)
+	xp_value = roundi(data.xp_value * (1.0 + data.xp_per_level * steps))
+	if elite:
+		max_health *= data.elite_health_multiplier
+		attack_damage *= data.elite_damage_multiplier
+		xp_value *= data.elite_xp_multiplier
+		_grow(data.elite_model_scale)
+
+
+## Makes the enemy bigger: the model through a wrapper node (so the flinch and
+## windup tweens on Model keep working) and the collision capsule by resizing it.
+func _grow(factor: float) -> void:
+	var wrapper := Node3D.new()
+	wrapper.name = "ModelRoot"
+	remove_child(_model)
+	add_child(wrapper)
+	wrapper.add_child(_model)
+	wrapper.scale = Vector3.ONE * factor
+	var shape_node := get_node_or_null("CollisionShape3D") as CollisionShape3D
+	var capsule := shape_node.shape as CapsuleShape3D if shape_node != null else null
+	if capsule != null:
+		capsule = capsule.duplicate()
+		capsule.radius *= factor
+		capsule.height *= factor
+		shape_node.shape = capsule
+		shape_node.position *= factor
+	if _label != null:
+		_label.position *= factor
+
 
 ## Desired horizontal velocity toward `point`, following the navmesh when one exists.
 func _move_toward(point: Vector3, speed: float, delta: float) -> Vector3:
@@ -411,7 +457,12 @@ func _play_death() -> void:
 func _update_label() -> void:
 	if _label == null or not _label.visible:
 		return
-	_label.text = "%s\n%d / %d\n%s" % [data.display_name, ceili(health_current), ceili(health_max), State.keys()[state]]
+	_label.text = "%s\n%d / %d\n%s" % [display_title(), ceili(health_current), ceili(health_max), State.keys()[state]]
+
+
+## "Elite Bramble Brute (Lv 4)" style name for labels and UI.
+func display_title() -> String:
+	return "%s%s (Lv %d)" % ["Elite " if elite else "", data.display_name, level]
 
 
 static func _flat(v: Vector3) -> Vector3:

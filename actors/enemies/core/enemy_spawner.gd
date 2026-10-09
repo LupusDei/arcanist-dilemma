@@ -16,13 +16,23 @@ signal cleared
 @export var respawn_delay := 0.0
 ## Enemies from this spawner alert each other on aggro.
 @export var as_pack := true
+@export_range(1, 60) var level := 1
+## How many of the group are elites (the first ones spawned).
+@export var elite_count := 0
+## Fixes spawn positions; 0 picks a random seed.
+@export var spawn_seed := 0
 
 var alive: Array[Enemy] = []
 
 var _spawned_total := 0
+var _rng := RandomNumberGenerator.new()
 
 
 func _ready() -> void:
+	if spawn_seed != 0:
+		_rng.seed = spawn_seed
+	else:
+		_rng.randomize()
 	if spawn_on_ready:
 		spawn_all.call_deferred()
 
@@ -38,7 +48,9 @@ func spawn_one() -> Enemy:
 	var enemy := enemy_scene.instantiate() as Enemy
 	if as_pack:
 		enemy.pack_id = get_instance_id()
-	var angle := TAU * float(_spawned_total) / float(maxi(count, 1)) + randf_range(-0.3, 0.3)
+	enemy.level = level
+	enemy.elite = _spawned_total < elite_count
+	var angle := TAU * float(_spawned_total) / float(maxi(count, 1)) + _rng.randf_range(-0.3, 0.3)
 	var offset := Vector3(cos(angle), 0.0, sin(angle)) * (spawn_radius if count > 1 else 0.0)
 	_spawned_total += 1
 	enemy.position = Vector3(offset.x, _ground_offset(offset), offset.z)

@@ -15,7 +15,9 @@ godot --path . res://actors/enemies/arena/enemy_arena.tscn
 The arena has a brute camp behind a wall, two hexlings to the east and a hound
 pack to the west. The player gets 150 stand-in HP and two debug attacks:
 **F / left click** fires an arcane bolt at the enemy you're facing, **G** is a
-small nova. Dodging (Shift) through a telegraphed attack or a bolt avoids it.
+small nova, and **N** throws away the camps and rolls a new procedural
+population (cycling meadow, forest, ruins, dungeon, one level band higher each
+time). Dodging (Shift) through a telegraphed attack or a bolt avoids it.
 
 ![Arena overview](docs/enemies-arena.png)
 
@@ -34,6 +36,41 @@ godot --headless --path . --script res://actors/enemies/tests/test_enemies.gd
 | Gloom Hound | Pack animal | 35 | 5.5 | 6, fast bites | Wakes its pack, flees once at 30% HP |
 
 Tuning lives in the `EnemyData` resources next to each scene (`types/*.tres`).
+Every enemy also has a `level` (health +12%, damage +8%, XP +15% per level by
+default) and can be an `elite` (2.5x health, 1.4x damage, 3x XP, double loot
+roll, drawn 30% bigger).
+
+## Procedural population
+
+World, village and dungeon generators never hand-place monsters. They describe
+the area and get spawners back:
+
+```gdscript
+var request := EnemySpawnRequest.new()
+request.area_seed = area_seed        # same seed, same monsters in the same places
+request.biome = &"forest"            # meadow, forest, ruins, dungeon in the default table
+request.level_min = 3
+request.level_max = 5
+request.area_center = Vector3(40, 0, -60)
+request.area_size = Vector2(80, 80)  # metres along X and Z
+request.density = 1.5                # groups per 1000 square metres
+request.min_spacing = 10.0
+request.elite_chance = 0.05
+request.exclusion_zones = PackedVector3Array([Vector3(0, 6, 20)])  # (x, z, radius): spawn, villages, NPCs
+EnemyPopulator.populate(monsters_node, preload("res://actors/enemies/types/default_spawn_table.tres"),
+		request, terrain.height_at)
+```
+
+- `EnemySpawnTable` is a weighted list of `EnemySpawnEntry` resources, each with
+  a monster scene, biome tags, a level band and a group size. The default table
+  is `types/default_spawn_table.tres`; a dungeon or act can use its own table.
+- `EnemySpawnTable.plan(request)` returns the layout as plain data (scene,
+  position, group size, level, elite, seed) without touching the scene, for
+  generators that want to inspect or adjust it first.
+- `EnemyPopulator.populate()` builds one `EnemySpawner` per group. Ground height
+  comes from the `height_at(x, z)` callable if given, else a raycast.
+- An area whose biome and levels match no entry gets no monsters rather than the
+  wrong ones.
 
 ## AI states
 
@@ -91,7 +128,8 @@ Enemy projectiles hit layer 1. The arena's bolt also hits layer 3.
 ## Layout
 
 - `core/` the shared pieces: `enemy.gd` (AI), `enemy_data.gd`, `enemy_health.gd`,
-  `enemy_damage.gd`, `enemy_spawner.gd`, loot table and drop, projectile.
-- `types/` one scene and one data resource per monster type.
+  `enemy_damage.gd`, `enemy_spawner.gd`, loot table and drop, projectile, and the
+  spawn table, request and populator.
+- `types/` one scene and one data resource per monster type, plus the default spawn table.
 - `arena/` the test arena.
 - `tests/` headless tests.
