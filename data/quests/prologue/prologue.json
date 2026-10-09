@@ -1,0 +1,336 @@
+{
+	"quests": [
+		{
+			"id": "prologue",
+			"title": "Tricks",
+			"kind": "main",
+			"act": "Prologue",
+			"level": 1,
+			"summary": "A farm kid in Millbrook with three little tricks and no idea what they mean. Then a stranger in grey walks into the tavern.",
+			"auto_start": [{"level_min": 1}],
+			"rewards": {"xp": 150},
+			"on_complete": [{"set": "prologue_done"}],
+			"stages": [
+				{
+					"id": "chores",
+					"description": "Ma left a list of chores. Magic makes them quicker. Mostly.",
+					"objectives": [
+						{"id": "spoon", "type": "cast", "target": "nudge", "where": "kitchen", "description": "Nudge the spoon across the kitchen table"},
+						{"id": "stove", "type": "cast", "target": "spark", "where": "kitchen", "description": "Light the stove with a finger spark"},
+						{"id": "tam", "type": "talk", "target": "tam", "description": "Show Tam what you can do"}
+					],
+					"on_complete": [{"xp": 40}],
+					"next": "bully"
+				},
+				{
+					"id": "bully",
+					"description": "Rook Barlow is picking on Tam by the well again.",
+					"objectives": [
+						{"id": "rook", "type": "talk", "target": "rook", "description": "Deal with Rook at the well"}
+					],
+					"next": "wolves_start"
+				},
+				{
+					"id": "wolves_start",
+					"description": "Wolves have been taking sheep from the barley fields at night.",
+					"objectives": [
+						{"id": "hollis", "type": "talk", "target": "farmer_hollis", "description": "Ask Farmer Hollis about the wolves"}
+					],
+					"next": "wolves"
+				},
+				{
+					"id": "wolves",
+					"description": "The wolves are in the barley. Your tricks will have to do.",
+					"objectives": [
+						{"id": "hounds", "type": "kill", "target": "gloom_hound", "count": 3, "description": "Drive the wolves out of the barley"}
+					],
+					"on_complete": [{"set": "barley_wolves_cleared"}],
+					"next": "wolves_report"
+				},
+				{
+					"id": "wolves_report",
+					"description": "The barley is quiet. Farmer Hollis will want to know.",
+					"objectives": [
+						{"id": "report", "type": "talk", "target": "farmer_hollis", "description": "Tell Farmer Hollis the wolves are gone"}
+					],
+					"next": "tavern"
+				},
+				{
+					"id": "tavern",
+					"description": "Everyone in Millbrook is talking about a stranger at the Mill Wheel.",
+					"objectives": [
+						{"id": "go", "type": "reach", "target": "tavern", "description": "Go to the Mill Wheel tavern"}
+					],
+					"next": "stranger"
+				},
+				{
+					"id": "stranger",
+					"description": "A stranger in a grey cloak sits by the fire, watching you.",
+					"objectives": [
+						{"id": "meet", "type": "talk", "target": "old_man", "description": "Speak to the old man in grey"}
+					],
+					"next": "hill_road"
+				},
+				{
+					"id": "hill_road",
+					"description": "The old man asked you to walk with him up the hill road.",
+					"objectives": [
+						{"id": "walk", "type": "reach", "target": "hill_road", "description": "Walk with the old man up the hill road"}
+					],
+					"next": "lightning"
+				},
+				{
+					"id": "lightning",
+					"description": "The old man stops at the top of the hill to tell you something.",
+					"on_enter": [{"dialogue": "lightning_strike"}],
+					"objectives": [
+						{"id": "listen", "type": "flag", "target": "old_man_struck", "description": "Listen to the old man"}
+					],
+					"next": "dream"
+				},
+				{
+					"id": "dream",
+					"description": "The old man is gone. All that's left is his hat and a staff that won't stop humming. Go home.",
+					"objectives": [
+						{"id": "sleep", "type": "flag", "target": "had_dream", "description": "Go home and sleep"}
+					],
+					"next": "wardens"
+				},
+				{
+					"id": "wardens",
+					"description": "Wardens rode into Millbrook at dawn, asking about the stranger.",
+					"objectives": [
+						{"id": "brask", "type": "talk", "target": "warden_sergeant", "description": "Speak to the Wardens in the square"}
+					],
+					"next": "square"
+				},
+				{
+					"id": "square",
+					"description": "The Wardens are gone, for now. The village square is loud with children.",
+					"objectives": [
+						{"id": "cross", "type": "reach", "target": "village_square", "description": "Cross the village square"},
+						{"id": "game", "type": "talk", "target": "children", "description": "Watch the children's game", "optional": true}
+					]
+				}
+			]
+		}
+	],
+	"dialogues": [
+		{
+			"id": "tam_chores",
+			"npc": "tam",
+			"priority": 10,
+			"conditions": [{"quest": "prologue", "stage": "chores"}],
+			"lines": [
+				{"text": "Do it again! Do the spoon thing! Ma says it's the devil's work but Ma also says that about turnips."},
+				{"speaker": "player", "text": "Watch the jar.", "effects": [{"set": "tam_impressed"}]},
+				{"speaker": "narrator", "text": "A spark jumps from your fingertip and the jar lid rattles. Tam claps like it's the King's own fireworks."},
+				{"text": "One day you'll be a real wizard. Or a mage. Or whatever the other one is. And I'll be your apprentice."},
+				{"id": "end", "choices": [
+					{"text": "You'll be the first to know.", "hint": "-", "effects": [{"add": {"tam_bond": 1}}]},
+					{"text": "It's just tricks, Tam. Go do your chores.", "hint": "-"}
+				], "text": "Promise?"}
+			]
+		},
+		{
+			"id": "rook_bully",
+			"npc": "rook",
+			"priority": 10,
+			"conditions": [{"quest": "prologue", "stage": "bully"}],
+			"lines": [
+				{"speaker": "narrator", "text": "Rook Barlow has Tam's cap and is holding it over the well. Tam is trying very hard not to cry."},
+				{"text": "Oh look, it's the spark freak. Gonna sizzle me? Go on. Try it."},
+				{"id": "choice", "speaker": "narrator", "text": "Rook dangles the cap over the dark water.", "choices": [
+					{"text": "Jolt him. Hard.", "next": "hard", "effects": [{"alignment": {"law": -3, "good": -2}}, {"set": {"rook_outcome": "jolted_hard"}}]},
+					{"text": "Give the cap a jolt so it jumps back to Tam.", "next": "clever", "effects": [{"alignment": {"law": -2, "good": 2}}, {"set": {"rook_outcome": "jolted_cap"}}]},
+					{"text": "Tell him you'll fetch the miller. His father.", "next": "miller", "effects": [{"alignment": {"law": 3}}, {"set": {"rook_outcome": "fetched_miller"}}]}
+				]},
+				{"id": "hard", "speaker": "narrator", "text": "The jolt cracks like a whip. Rook yelps, drops the cap and sits down hard in the mud. A few people across the square turn to stare.", "next": "after_hard"},
+				{"id": "after_hard", "text": "You're mad. You're actually mad! I'm telling everyone!", "effects": [{"set": "rook_hurt"}], "next": "tam"},
+				{"id": "clever", "speaker": "narrator", "text": "A little crack of light and the cap hops out of Rook's hand, right into Tam's. Rook stares at his empty fingers.", "next": "after_clever"},
+				{"id": "after_clever", "text": "That's... how did you... this isn't over, freak.", "next": "tam"},
+				{"id": "miller", "text": "You wouldn't. ...You would. Fine. Take your stupid cap.", "next": "tam"},
+				{"id": "tam", "speaker": "tam", "text": "Thanks. You didn't have to. ...But thanks.", "end": true}
+			]
+		},
+		{
+			"id": "hollis_wolves",
+			"npc": "farmer_hollis",
+			"priority": 10,
+			"conditions": [{"quest": "prologue", "stage": "wolves_start"}],
+			"lines": [
+				{"text": "Three ewes this week. Three! Something's driving them wolves out of the Fenwood, and into my barley."},
+				{"text": "Your Ma says you've got a knack for the odd trick. Well, odd's what I need. Wolves don't like a spark in the face."},
+				{"speaker": "player", "text": "I'll see what I can do."},
+				{"text": "Mind yourself. They come in threes and they bite."}
+			]
+		},
+		{
+			"id": "hollis_report",
+			"npc": "farmer_hollis",
+			"priority": 10,
+			"conditions": [{"quest": "prologue", "stage": "wolves_report"}],
+			"lines": [
+				{"text": "You did it? Saints. I owe you a pie. Several pies."},
+				{"text": "Odd thing, though. I looked at one of 'em. Skin and bone. They weren't hunting for sport. Whatever's wrong in the Fenwood, it's starving them."},
+				{"text": "There'll be more of them. What do you reckon we do?", "choices": [
+					{"text": "Hunt the rest of the pack before they come back.", "next": "hunt", "effects": [{"alignment": {"law": 2, "good": -3}}, {"set": {"barley_wolves_fate": "hunted"}}]},
+					{"text": "Leave scraps at the forest edge. Fed wolves stay away.", "next": "spare", "effects": [{"alignment": {"law": -1, "good": 3}}, {"set": {"barley_wolves_fate": "fed"}}]}
+				]},
+				{"id": "hunt", "text": "Hard, but fair. A farm can't feed the forest.", "next": "reward"},
+				{"id": "spare", "text": "Feeding wolves. Your Ma will say you're soft in the head. ...I'll try it.", "next": "reward"},
+				{"id": "reward", "text": "Here. My old gloves. Better on your hands than in my drawer.", "effects": [{"give": {"farmhand_gloves": 1}}], "end": true}
+			]
+		},
+		{
+			"id": "innkeeper_stranger",
+			"npc": "innkeeper",
+			"priority": 10,
+			"conditions": [{"quest": "prologue", "stage": "stranger"}],
+			"lines": [
+				{"text": "He's been sat there since noon. Paid in old silver, the kind with the Concord stamp. Asked for you by name, he did."},
+				{"text": "Go on, then. He doesn't bite. I don't think."}
+			]
+		},
+		{
+			"id": "old_man_tavern",
+			"npc": "old_man",
+			"priority": 10,
+			"conditions": [{"quest": "prologue", "stage": "stranger"}],
+			"once": true,
+			"lines": [
+				{"speaker": "narrator", "text": "The stranger by the fire wears a long grey cloak and a wide hat, singed at the tip. His staff leans against the chair, humming faintly, like a bee in a jar."},
+				{"id": "ask", "text": "That spoon on the table. Make it move.", "choices": [
+					{"text": "Nudge the spoon across the table.", "next": "nudge"},
+					{"text": "Show off: spark, nudge and jolt it all at once.", "next": "showoff", "effects": [{"set": "showed_all_three"}]},
+					{"text": "Who's asking?", "next": "who"}
+				]},
+				{"id": "who", "text": "Someone who walked a very long way to watch a spoon move. Go on.", "next": "ask"},
+				{"id": "nudge", "speaker": "narrator", "text": "The spoon slides, wobbles and rolls off the edge. Someone at the bar laughs.", "next": "more"},
+				{"id": "showoff", "speaker": "narrator", "text": "The spoon leaps, crackles and spins in the air for a heartbeat before it clatters down, smoking. The bar goes quiet.", "next": "more"},
+				{"id": "more", "text": "Hm. You have more in you than you know."},
+				{"text": "All three of it.", "choices": [
+					{"text": "All three of what?", "next": "what"},
+					{"text": "What's your name?", "next": "name", "effects": [{"set": "asked_old_man_name"}]}
+				]},
+				{"id": "what", "text": "The book, the understanding and the fire inside. Most people get one, if they're lucky. You have a little of each, and none of it trained.", "next": "walk"},
+				{"id": "name", "text": "Names are heavy things to hand a stranger. Grey will do, for now.", "next": "walk"},
+				{"id": "walk", "text": "Walk with me. Up the hill road. Some things are better said under the sky.", "choices": [
+					{"text": "I'll come.", "next": "go"},
+					{"text": "Ma will want me home for supper.", "next": "supper"}
+				]},
+				{"id": "supper", "text": "Then we'll be quick about it.", "next": "go"},
+				{"id": "go", "speaker": "narrator", "text": "He stands, leaning on the worn staff, and nods toward the door.", "effects": [{"set": "agreed_to_walk"}], "end": true}
+			]
+		},
+		{
+			"id": "lightning_strike",
+			"speaker": "old_man",
+			"lines": [
+				{"text": "This is far enough. Listen carefully, because I may not get to say it twice."},
+				{"text": "This world is held together by a promise older than this hill. That promise is breaking. When it breaks, people like you will matter more than kings."},
+				{"id": "ask", "speaker": "narrator", "text": "He looks up. The sky is perfectly clear.", "choices": [
+					{"text": "What promise?", "next": "strike"},
+					{"text": "People like me? I make spoons move.", "next": "spoons"}
+				]},
+				{"id": "spoons", "text": "Today. Today you make spoons move.", "next": "strike"},
+				{"id": "strike", "speaker": "narrator", "text": "The sky cracks open.", "effects": [{"event": "lightning_strike"}]},
+				{"speaker": "narrator", "text": "Light. Noise. A smell like hot iron. When you can see again there is only a scorched hat in the grass, and a worn staff, still humming.", "effects": [{"give": {"old_mans_hat": 1, "worn_staff": 1}}, {"set": "has_old_mans_belongings"}]},
+				{"speaker": "narrator", "text": "On the ridge, a rider in Warden blue watches you for a long moment. Then turns, and is gone.", "effects": [{"event": "warden_rider_watches"}, {"set": ["old_man_struck", "saw_warden_rider"]}]}
+			]
+		},
+		{
+			"id": "home_bed_sleep",
+			"npc": "home_bed",
+			"priority": 10,
+			"conditions": [{"quest": "prologue", "stage": "dream"}],
+			"lines": [
+				{"speaker": "narrator", "text": "Your bed. The staff hums quietly where you leaned it against the wall. Tam is already asleep, or pretending to be.", "choices": [
+					{"text": "Sleep.", "effects": [{"dialogue": "dream_grey_room"}]},
+					{"text": "Not yet.", "hint": "-"}
+				]}
+			]
+		},
+		{
+			"id": "dream_grey_room",
+			"speaker": "dream_voice",
+			"lines": [
+				{"speaker": "narrator", "text": "You dream of a grey room with no doors. Somewhere far away, a staff is humming."},
+				{"text": "...can you hear me? The line is thin here. Thinner every day."},
+				{"text": "Find the Concord.", "choices": [
+					{"text": "Who are you?", "next": "fade"},
+					{"text": "Where are you?", "next": "fade"},
+					{"text": "What is the Concord?", "next": "fade"}
+				]},
+				{"id": "fade", "text": "...find the Concord... before the promise..."},
+				{"speaker": "narrator", "text": "You wake to hoofbeats in the lane.", "effects": [{"set": "had_dream"}]}
+			]
+		},
+		{
+			"id": "brask_questions",
+			"npc": "warden_sergeant",
+			"priority": 10,
+			"conditions": [{"quest": "prologue", "stage": "wardens"}],
+			"lines": [
+				{"text": "You. You were seen on the hill road yesterday with a vagrant in grey. Where is he now?"},
+				{"speaker": "player", "text": "Lightning hit him. Out of a clear sky. He's... gone."},
+				{"text": "Gone. Convenient. What did he tell you? What did he give you?", "choices": [
+					{"text": "Tell them everything, and that you kept his hat and staff.", "next": "truth", "effects": [{"alignment": {"law": 4}}, {"standing": {"wardens": 5}}, {"set": "told_wardens"}]},
+					{"text": "Tell them about the lightning, but say he left nothing behind.", "next": "half", "effects": [{"alignment": {"law": -2}}, {"set": "hat_hidden"}]},
+					{"text": "Say he was talking nonsense and you never saw a thing.", "next": "lie", "effects": [{"alignment": {"law": -4}}, {"standing": {"wardens": -2}}, {"set": ["hat_hidden", "lied_to_brask"]}]}
+				]},
+				{"id": "truth", "text": "A hat and a staff. Hm. Keep them safe and keep them close. Someone will come for them.", "next": "leave"},
+				{"id": "half", "text": "Nothing. Struck by lightning and he left nothing, not even a boot. ...If you remember anything, the Wardens will be grateful.", "next": "leave"},
+				{"id": "lie", "text": "Nonsense, he said? Funny. Half the village says otherwise. Don't leave Millbrook.", "next": "leave"},
+				{"id": "leave", "speaker": "narrator", "text": "The sergeant swings back into the saddle. The Wardens ride out the way they came."}
+			]
+		},
+		{
+			"id": "children_greycloak",
+			"npc": "children",
+			"priority": 10,
+			"conditions": [{"quest": "prologue", "stage": "square"}],
+			"lines": [
+				{"speaker": "narrator", "text": "A gang of children is playing Greycloak and the Sundering, the oldest game in the Vale. One of them wears a bucket for a hat."},
+				{"text": "Stand back, Sundering! I'm the Greycloak, and I'll seal you in a PROMISE!"},
+				{"text": "That's not how it goes! The Greycloak's hat is crooked like a chimney, and his staff SINGS. Yours is a broom."},
+				{"speaker": "narrator", "text": "On your back, the old man's staff gives a single, quiet hum.", "effects": [{"set": "heard_greycloak_game"}]}
+			]
+		},
+		{
+			"id": "tam_idle",
+			"npc": "tam",
+			"lines": [
+				{"text": "Do the spoon thing again! Please? Just once?"}
+			]
+		},
+		{
+			"id": "rook_idle",
+			"npc": "rook",
+			"lines": [
+				{"text": "What are you looking at, spark freak?"}
+			]
+		},
+		{
+			"id": "hollis_idle",
+			"npc": "farmer_hollis",
+			"lines": [
+				{"text": "Barley won't harvest itself. Neither will I, at this rate."}
+			]
+		},
+		{
+			"id": "innkeeper_idle",
+			"npc": "innkeeper",
+			"lines": [
+				{"text": "Welcome to the Mill Wheel. Cider's warm, beds are cold, and that's how we like it."}
+			]
+		},
+		{
+			"id": "children_idle",
+			"npc": "children",
+			"lines": [
+				{"text": "You can't play, you're too old. Unless you can do a REAL spell."}
+			]
+		}
+	]
+}
