@@ -117,6 +117,52 @@ static func flower(material: Material) -> ArrayMesh:
 	return _mesh_from(vertices, normals, uvs, material)
 
 
+## Low, round shrub built from a few lumpy blobs.
+static func bush(rng: RandomNumberGenerator, material: Material) -> ArrayMesh:
+	var st := SurfaceTool.new()
+	for blob in rng.randi_range(3, 5):
+		var radius := rng.randf_range(0.45, 0.8)
+		var offset := Vector3(rng.randf_range(-0.6, 0.6), radius * 0.6, rng.randf_range(-0.6, 0.6))
+		st.append_from(_lumpy_sphere(radius, rng.randi()), 0, Transform3D(Basis.IDENTITY, offset))
+	var mesh := st.commit()
+	mesh.surface_set_material(0, material)
+	return mesh
+
+
+## Upright cylinder of bark. Used for stumps as is, and for fallen logs by
+## tipping the instance over, so the bark shader still sees a vertical trunk.
+static func log_segment(rng: RandomNumberGenerator, length: float, material: Material) -> ArrayMesh:
+	var st := SurfaceTool.new()
+	var radius := rng.randf_range(0.28, 0.4)
+	st.append_from(_cylinder(radius * 0.92, radius, length, 9), 0, Transform3D(Basis.IDENTITY, Vector3(0, length * 0.5, 0)))
+	var mesh := st.commit()
+	mesh.surface_set_material(0, material)
+	return mesh
+
+
+## A small cluster of toadstools.
+static func mushrooms(rng: RandomNumberGenerator, cap_material: Material, stem_material: Material) -> ArrayMesh:
+	var mesh := ArrayMesh.new()
+	var stems := SurfaceTool.new()
+	var caps := SurfaceTool.new()
+	for i in rng.randi_range(3, 5):
+		var spot := Vector3(rng.randf_range(-0.25, 0.25), 0, rng.randf_range(-0.25, 0.25))
+		var height := rng.randf_range(0.08, 0.2)
+		stems.append_from(_cylinder(0.025, 0.035, height, 5), 0, Transform3D(Basis.IDENTITY, spot + Vector3(0, height * 0.5, 0)))
+		var cap := SphereMesh.new()
+		cap.radius = rng.randf_range(0.06, 0.11)
+		cap.height = cap.radius
+		cap.is_hemisphere = true
+		cap.radial_segments = 8
+		cap.rings = 3
+		caps.append_from(cap, 0, Transform3D(Basis.IDENTITY, spot + Vector3(0, height, 0)))
+	stems.commit(mesh)
+	mesh.surface_set_material(0, stem_material)
+	caps.commit(mesh)
+	mesh.surface_set_material(1, cap_material)
+	return mesh
+
+
 static func _mesh_from(vertices: PackedVector3Array, normals: PackedVector3Array, uvs: PackedVector2Array, material: Material) -> ArrayMesh:
 	var arrays := []
 	arrays.resize(Mesh.ARRAY_MAX)

@@ -22,27 +22,29 @@ const FLOWER_COLORS: Array[Color] = [
 var _terrain: Terrain
 var _rng := RandomNumberGenerator.new()
 var _colliders: StaticBody3D
+var _forest := FastNoiseLite.new()
 
 
 func _ready() -> void:
 	_terrain = get_node(terrain_path) as Terrain
 	_terrain.generate()
 	_rng.seed = scatter_seed
+	_forest.seed = scatter_seed
+	_forest.frequency = 0.02
 	_colliders = StaticBody3D.new()
 	_colliders.name = "Colliders"
 	add_child(_colliders)
 	_scatter_trees()
 	_scatter_rocks()
+	_scatter_undergrowth()
 	_scatter_grass()
 	_scatter_flowers()
 
 
 func _scatter_trees() -> void:
-	var trunk_material := StandardMaterial3D.new()
-	trunk_material.albedo_color = Color(0.45, 0.31, 0.2)
-	trunk_material.roughness = 0.9
-	var broadleaf_material := _shader_material(preload("res://materials/foliage.gdshader"), {"leaf_color": Color(0.55, 0.66, 0.2)})
-	var pine_material := _shader_material(preload("res://materials/foliage.gdshader"), {"leaf_color": Color(0.22, 0.4, 0.24), "sway": 0.02})
+	var trunk_material := _shader_material(preload("res://materials/bark.gdshader"), {})
+	var broadleaf_material := _shader_material(preload("res://materials/foliage.gdshader"), {"leaf_color": Color(0.58, 0.68, 0.22), "shadow_color": Color(0.26, 0.4, 0.12)})
+	var pine_material := _shader_material(preload("res://materials/foliage.gdshader"), {"leaf_color": Color(0.26, 0.45, 0.27), "shadow_color": Color(0.1, 0.22, 0.14), "sway": 0.02, "cluster_scale": 6.0})
 
 	var broadleaf: Array[Mesh] = []
 	var pines: Array[Mesh] = []
@@ -51,9 +53,7 @@ func _scatter_trees() -> void:
 	for i in 2:
 		pines.append(MeshFactory.pine_tree(_rng, trunk_material, pine_material))
 
-	var forest := FastNoiseLite.new()
-	forest.seed = scatter_seed
-	forest.frequency = 0.02
+	var forest := _forest
 	var placed := {}
 	var buckets := {}  # Mesh -> Array[Transform3D]
 	var trunk_shape := CylinderShape3D.new()
@@ -95,9 +95,7 @@ func _scatter_trees() -> void:
 
 
 func _scatter_rocks() -> void:
-	var material := StandardMaterial3D.new()
-	material.albedo_color = Color(0.6, 0.6, 0.62)
-	material.roughness = 0.95
+	var material := _shader_material(preload("res://materials/rock.gdshader"), {})
 	var variants: Array[Mesh] = []
 	for i in 4:
 		variants.append(MeshFactory.rock(_rng, material))
@@ -139,6 +137,103 @@ func _add_rock(mesh: Mesh, transforms: Dictionary, p: Vector2, size_factor: floa
 		collision.shape = shape
 		collision.position = spot + Vector3(0, 0.1 * size_factor, 0)
 		_colliders.add_child(collision)
+
+
+## Bushes at forest edges and in the meadow, stumps and fallen logs in the
+## woods, and toadstools growing beside them.
+func _scatter_undergrowth() -> void:
+	var bush_material := _shader_material(preload("res://materials/foliage.gdshader"), {"leaf_color": Color(0.46, 0.62, 0.2), "shadow_color": Color(0.2, 0.34, 0.1), "sway": 0.03, "sway_start": 0.3, "cluster_scale": 5.0})
+	var bark := _shader_material(preload("res://materials/bark.gdshader"), {"bark_color": Color(0.4, 0.29, 0.2)})
+	var cap := StandardMaterial3D.new()
+	cap.albedo_color = Color(0.78, 0.24, 0.18)
+	var stem := StandardMaterial3D.new()
+	stem.albedo_color = Color(0.92, 0.88, 0.78)
+
+	var bushes: Array[Mesh] = []
+	for i in 3:
+		bushes.append(MeshFactory.bush(_rng, bush_material))
+	var bush_transforms := {}
+	for i in 1400:
+		var p := Vector2(_rng.randf_range(-130.0, 130.0), _rng.randf_range(-130.0, 130.0))
+		var density := _forest.get_noise_2d(p.x, p.y) * 0.5 + 0.5
+		# Thickest just outside the woods, sparse out in the open.
+		var chance := 0.15 + smoothstep(0.35, 0.55, density) * (1.0 - smoothstep(0.7, 0.85, density)) * 0.7
+		if _rng.randf() > chance or p.length() < 12.0 or not _is_open_ground(p, 0.5, 2.5):
+			continue
+		if _terrain.normal_at(p.x, p.y).y < 0.75:
+			continue
+		var size_factor := _rng.randf_range(0.7, 1.4)
+		var rotation_basis := Basis(Vector3.UP, _rng.randf() * TAU).scaled(Vector3(1.0, _rng.randf_range(0.7, 1.0), 1.0) * size_factor)
+		bush_transforms.get_or_add(bushes.pick_random(), []).append(Transform3D(rotation_basis, Vector3(p.x, _terrain.height_at(p.x, p.y) - 0.1, p.y)))
+	for mesh in bush_transforms:
+		_add_multimesh("Bushes", mesh, bush_transforms[mesh], 0.12)
+
+	var stumps: Array = []
+	var logs: Array = []
+	var mushroom_spots: Array[Vector2] = []
+	var stump_mesh := MeshFactory.log_segment(_rng, 0.55, bark)
+	var log_lengths := [2.6, 3.4, 4.2]
+	var log_meshes: Array[Mesh] = []
+	for length in log_lengths:
+		log_meshes.append(MeshFactory.log_segment(_rng, length, bark))
+	var log_transforms := {}
+	for i in 900:
+		var p := Vector2(_rng.randf_range(-125.0, 125.0), _rng.randf_range(-125.0, 125.0))
+		if _forest.get_noise_2d(p.x, p.y) * 0.5 + 0.5 < 0.55 or not _is_open_ground(p, 0.5, 3.0):
+			continue
+		if _terrain.normal_at(p.x, p.y).y < 0.85 or p.length() < 15.0:
+			continue
+		var ground := _terrain.height_at(p.x, p.y)
+		if _rng.randf() < 0.55:
+			if stumps.size() >= 70:
+				continue
+			var rotation_basis := Basis(Vector3.UP, _rng.randf() * TAU).scaled(Vector3.ONE * _rng.randf_range(0.8, 1.3))
+			stumps.append(Transform3D(rotation_basis, Vector3(p.x, ground - 0.1, p.y)))
+			_add_cylinder_collider(Vector3(p.x, ground + 0.25, p.y), 0.4, 0.7)
+		else:
+			if logs.size() >= 45:
+				continue
+			var index := _rng.randi_range(0, log_meshes.size() - 1)
+			var length: float = log_lengths[index]
+			var yaw := _rng.randf() * TAU
+			var along := Vector3(cos(yaw), 0, -sin(yaw))
+			# Tip the upright log over so it lies along `along`, centred on p.
+			var lying := Basis(Vector3.UP, yaw) * Basis(Vector3.FORWARD, PI / 2.0)
+			var start := Vector3(p.x, ground + 0.25, p.y) - lying.y * length * 0.5
+			log_transforms.get_or_add(log_meshes[index], []).append(Transform3D(lying, start))
+			logs.append(p)
+			var shape := BoxShape3D.new()
+			shape.size = Vector3(length, 0.6, 0.6)
+			var collision := CollisionShape3D.new()
+			collision.shape = shape
+			collision.transform = Transform3D(Basis(Vector3.UP, yaw), Vector3(p.x, ground + 0.25, p.y))
+			_colliders.add_child(collision)
+		mushroom_spots.append(p)
+	_add_multimesh("Deadwood", stump_mesh, stumps, 0.1)
+	for mesh in log_transforms:
+		_add_multimesh("Deadwood", mesh, log_transforms[mesh], 0.1)
+
+	var mushroom_meshes: Array[Mesh] = []
+	for i in 3:
+		mushroom_meshes.append(MeshFactory.mushrooms(_rng, cap, stem))
+	var mushroom_transforms := {}
+	for spot in mushroom_spots:
+		for i in _rng.randi_range(1, 3):
+			var p := spot + Vector2.from_angle(_rng.randf() * TAU) * _rng.randf_range(0.6, 1.6)
+			var rotation_basis := Basis(Vector3.UP, _rng.randf() * TAU).scaled(Vector3.ONE * _rng.randf_range(0.8, 1.5))
+			mushroom_transforms.get_or_add(mushroom_meshes.pick_random(), []).append(Transform3D(rotation_basis, Vector3(p.x, _terrain.height_at(p.x, p.y), p.y)))
+	for mesh in mushroom_transforms:
+		_add_multimesh("Mushrooms", mesh, mushroom_transforms[mesh], 0.1)
+
+
+func _add_cylinder_collider(at: Vector3, radius: float, height: float) -> void:
+	var shape := CylinderShape3D.new()
+	shape.radius = radius
+	shape.height = height
+	var collision := CollisionShape3D.new()
+	collision.shape = shape
+	collision.position = at
+	_colliders.add_child(collision)
 
 
 func _scatter_grass() -> void:

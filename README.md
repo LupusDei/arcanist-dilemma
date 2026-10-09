@@ -25,6 +25,12 @@ Villages are generated from recipes by a seeded factory: plan as data, validate,
 
 ![Millbrook from above](docs/millbrook-aerial.png)
 
+| Village detail | Woods |
+| --- | --- |
+| ![Village](docs/village-detail.png) | ![Woods](docs/forest-detail.png) |
+
+Surfaces are textured procedurally in shaders (no image files): plank walls, shingles and fitted stone in `materials/village/`, and terrain, bark, foliage and rock in `materials/`, all sharing the noise and bump-mapping helpers in `materials/include/procedural.gdshaderinc`.
+
 - `systems/procgen/` holds the generation core and the village factory, with recipes in `systems/procgen/village/recipes/`.
 - `scenes/procgen/village_lab.tscn` rerolls villages by seed (N/B), recipe (1 to 3) and war damage (W).
 - `tests/procgen_test.gd` checks 200 seeds per recipe for valid, repeatable villages.
