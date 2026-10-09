@@ -1,0 +1,39 @@
+[gd_resource type="Resource" script_class="EnemyData" format=3]
+
+[ext_resource type="Script" path="res://actors/enemies/core/enemy_data.gd" id="1_data"]
+[ext_resource type="Script" path="res://actors/enemies/core/enemy_loot_table.gd" id="2_table"]
+[ext_resource type="Script" path="res://actors/enemies/core/enemy_loot_entry.gd" id="3_entry"]
+
+[sub_resource type="Resource" id="Entry_hound_pelt"]
+script = ExtResource("3_entry")
+item_id = &"hound_pelt"
+chance = 0.35
+count_min = 1
+count_max = 1
+
+[sub_resource type="Resource" id="Loot"]
+script = ExtResource("2_table")
+gold_min = 1
+gold_max = 5
+entries = Array[ExtResource("3_entry")]([SubResource("Entry_hound_pelt")])
+
+[resource]
+script = ExtResource("1_data")
+display_name = "Gloom Hound"
+max_health = 35.0
+move_speed = 5.5
+retreat_speed_multiplier = 1.1
+xp_value = 8
+aggro_range = 11.0
+leash_range = 30.0
+aggro_delay = 0.25
+pack_alert_radius = 12.0
+attack_range = 1.5
+attack_damage = 6.0
+attack_windup = 0.3
+attack_recovery = 0.25
+attack_cooldown = 1.0
+flee_health_fraction = 0.3
+flee_duration = 2.5
+wander_radius = 4.0
+loot_table = SubResource("Loot")

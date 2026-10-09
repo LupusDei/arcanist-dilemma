@@ -1,0 +1,46 @@
+[gd_resource type="Resource" script_class="EnemyData" format=3]
+
+[ext_resource type="Script" path="res://actors/enemies/core/enemy_data.gd" id="1_data"]
+[ext_resource type="Script" path="res://actors/enemies/core/enemy_loot_table.gd" id="2_table"]
+[ext_resource type="Script" path="res://actors/enemies/core/enemy_loot_entry.gd" id="3_entry"]
+[ext_resource type="PackedScene" path="res://actors/enemies/core/enemy_projectile.tscn" id="4_projectile"]
+
+[sub_resource type="Resource" id="Entry_hex_dust"]
+script = ExtResource("3_entry")
+item_id = &"hex_dust"
+chance = 0.5
+count_min = 1
+count_max = 2
+
+[sub_resource type="Resource" id="Entry_arcane_scrap"]
+script = ExtResource("3_entry")
+item_id = &"arcane_scrap"
+chance = 0.15
+count_min = 1
+count_max = 1
+
+[sub_resource type="Resource" id="Loot"]
+script = ExtResource("2_table")
+gold_min = 3
+gold_max = 10
+entries = Array[ExtResource("3_entry")]([SubResource("Entry_hex_dust"), SubResource("Entry_arcane_scrap")])
+
+[resource]
+script = ExtResource("1_data")
+display_name = "Hexling"
+max_health = 45.0
+move_speed = 3.0
+xp_value = 20
+aggro_range = 13.0
+leash_range = 26.0
+attack_style = 1
+attack_range = 12.0
+attack_damage = 9.0
+attack_windup = 0.6
+attack_recovery = 0.3
+attack_cooldown = 2.0
+keep_away_distance = 5.0
+projectile_speed = 13.0
+wander_radius = 2.0
+projectile_scene = ExtResource("4_projectile")
+loot_table = SubResource("Loot")

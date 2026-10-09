@@ -1,0 +1,251 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://actors/enemies/arena/enemy_arena.gd" id="1_arena"]
+[ext_resource type="Shader" path="res://materials/greybox_grid.gdshader" id="2_grid"]
+[ext_resource type="PackedScene" path="res://scenes/player/player.tscn" id="3_player"]
+[ext_resource type="Script" path="res://actors/enemies/core/enemy_spawner.gd" id="4_spawner"]
+[ext_resource type="PackedScene" path="res://actors/enemies/types/bramble_brute.tscn" id="5_brute"]
+[ext_resource type="PackedScene" path="res://actors/enemies/types/hexling.tscn" id="6_hexling"]
+[ext_resource type="PackedScene" path="res://actors/enemies/types/gloom_hound.tscn" id="7_hound"]
+
+[sub_resource type="ProceduralSkyMaterial" id="Sky_material"]
+sky_top_color = Color(0.3, 0.24, 0.45, 1)
+sky_horizon_color = Color(0.78, 0.6, 0.62, 1)
+ground_bottom_color = Color(0.12, 0.11, 0.15, 1)
+ground_horizon_color = Color(0.78, 0.6, 0.62, 1)
+
+[sub_resource type="Sky" id="Sky_arena"]
+sky_material = SubResource("Sky_material")
+
+[sub_resource type="Environment" id="Environment_arena"]
+background_mode = 2
+sky = SubResource("Sky_arena")
+ambient_light_source = 3
+tonemap_mode = 2
+ssao_enabled = true
+glow_enabled = true
+
+[sub_resource type="NavigationMesh" id="NavMesh_arena"]
+geometry_parsed_geometry_type = 1
+cell_size = 0.25
+cell_height = 0.25
+agent_radius = 0.5
+agent_height = 2.0
+agent_max_climb = 0.25
+
+[sub_resource type="ShaderMaterial" id="Mat_floor"]
+render_priority = 0
+shader = ExtResource("2_grid")
+shader_parameter/base_color = Color(0.4, 0.5, 0.34, 1)
+shader_parameter/line_color = Color(0.32, 0.41, 0.27, 1)
+
+[sub_resource type="ShaderMaterial" id="Mat_wall"]
+render_priority = 0
+shader = ExtResource("2_grid")
+shader_parameter/base_color = Color(0.5, 0.46, 0.42, 1)
+shader_parameter/line_color = Color(0.4, 0.36, 0.32, 1)
+
+[sub_resource type="BoxShape3D" id="Shape_Floor"]
+size = Vector3(50, 1, 50)
+
+[sub_resource type="BoxMesh" id="Mesh_Floor"]
+size = Vector3(50, 1, 50)
+
+[sub_resource type="BoxShape3D" id="Shape_WallNorth"]
+size = Vector3(52, 3, 1)
+
+[sub_resource type="BoxMesh" id="Mesh_WallNorth"]
+size = Vector3(52, 3, 1)
+
+[sub_resource type="BoxShape3D" id="Shape_WallSouth"]
+size = Vector3(52, 3, 1)
+
+[sub_resource type="BoxMesh" id="Mesh_WallSouth"]
+size = Vector3(52, 3, 1)
+
+[sub_resource type="BoxShape3D" id="Shape_WallEast"]
+size = Vector3(1, 3, 50)
+
+[sub_resource type="BoxMesh" id="Mesh_WallEast"]
+size = Vector3(1, 3, 50)
+
+[sub_resource type="BoxShape3D" id="Shape_WallWest"]
+size = Vector3(1, 3, 50)
+
+[sub_resource type="BoxMesh" id="Mesh_WallWest"]
+size = Vector3(1, 3, 50)
+
+[sub_resource type="BoxShape3D" id="Shape_Divider"]
+size = Vector3(16, 2, 1)
+
+[sub_resource type="BoxMesh" id="Mesh_Divider"]
+size = Vector3(16, 2, 1)
+
+[sub_resource type="BoxShape3D" id="Shape_PillarA"]
+size = Vector3(1.5, 2, 1.5)
+
+[sub_resource type="BoxMesh" id="Mesh_PillarA"]
+size = Vector3(1.5, 2, 1.5)
+
+[sub_resource type="BoxShape3D" id="Shape_PillarB"]
+size = Vector3(1.5, 2, 1.5)
+
+[sub_resource type="BoxMesh" id="Mesh_PillarB"]
+size = Vector3(1.5, 2, 1.5)
+
+[sub_resource type="BoxShape3D" id="Shape_PillarC"]
+size = Vector3(1.5, 2, 1.5)
+
+[sub_resource type="BoxMesh" id="Mesh_PillarC"]
+size = Vector3(1.5, 2, 1.5)
+
+[sub_resource type="BoxShape3D" id="Shape_Rock"]
+size = Vector3(3, 0.8, 2)
+
+[sub_resource type="BoxMesh" id="Mesh_Rock"]
+size = Vector3(3, 0.8, 2)
+
+[node name="EnemyArena" type="Node3D"]
+script = ExtResource("1_arena")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_arena")
+
+[node name="Sun" type="DirectionalLight3D" parent="."]
+rotation = Vector3(-0.9, 0.5, 0)
+light_color = Color(1, 0.9, 0.78, 1)
+light_energy = 1.2
+shadow_enabled = true
+
+[node name="NavigationRegion3D" type="NavigationRegion3D" parent="."]
+navigation_mesh = SubResource("NavMesh_arena")
+
+[node name="Geometry" type="Node3D" parent="NavigationRegion3D"]
+
+[node name="Floor" type="StaticBody3D" parent="NavigationRegion3D/Geometry"]
+position = Vector3(0, -0.5, 0)
+
+[node name="Shape" type="CollisionShape3D" parent="NavigationRegion3D/Geometry/Floor"]
+shape = SubResource("Shape_Floor")
+
+[node name="Mesh" type="MeshInstance3D" parent="NavigationRegion3D/Geometry/Floor"]
+mesh = SubResource("Mesh_Floor")
+surface_material_override/0 = SubResource("Mat_floor")
+
+[node name="WallNorth" type="StaticBody3D" parent="NavigationRegion3D/Geometry"]
+position = Vector3(0, 1, -25.5)
+
+[node name="Shape" type="CollisionShape3D" parent="NavigationRegion3D/Geometry/WallNorth"]
+shape = SubResource("Shape_WallNorth")
+
+[node name="Mesh" type="MeshInstance3D" parent="NavigationRegion3D/Geometry/WallNorth"]
+mesh = SubResource("Mesh_WallNorth")
+surface_material_override/0 = SubResource("Mat_wall")
+
+[node name="WallSouth" type="StaticBody3D" parent="NavigationRegion3D/Geometry"]
+position = Vector3(0, 1, 25.5)
+
+[node name="Shape" type="CollisionShape3D" parent="NavigationRegion3D/Geometry/WallSouth"]
+shape = SubResource("Shape_WallSouth")
+
+[node name="Mesh" type="MeshInstance3D" parent="NavigationRegion3D/Geometry/WallSouth"]
+mesh = SubResource("Mesh_WallSouth")
+surface_material_override/0 = SubResource("Mat_wall")
+
+[node name="WallEast" type="StaticBody3D" parent="NavigationRegion3D/Geometry"]
+position = Vector3(25.5, 1, 0)
+
+[node name="Shape" type="CollisionShape3D" parent="NavigationRegion3D/Geometry/WallEast"]
+shape = SubResource("Shape_WallEast")
+
+[node name="Mesh" type="MeshInstance3D" parent="NavigationRegion3D/Geometry/WallEast"]
+mesh = SubResource("Mesh_WallEast")
+surface_material_override/0 = SubResource("Mat_wall")
+
+[node name="WallWest" type="StaticBody3D" parent="NavigationRegion3D/Geometry"]
+position = Vector3(-25.5, 1, 0)
+
+[node name="Shape" type="CollisionShape3D" parent="NavigationRegion3D/Geometry/WallWest"]
+shape = SubResource("Shape_WallWest")
+
+[node name="Mesh" type="MeshInstance3D" parent="NavigationRegion3D/Geometry/WallWest"]
+mesh = SubResource("Mesh_WallWest")
+surface_material_override/0 = SubResource("Mat_wall")
+
+[node name="Divider" type="StaticBody3D" parent="NavigationRegion3D/Geometry"]
+position = Vector3(0, 1, -5)
+
+[node name="Shape" type="CollisionShape3D" parent="NavigationRegion3D/Geometry/Divider"]
+shape = SubResource("Shape_Divider")
+
+[node name="Mesh" type="MeshInstance3D" parent="NavigationRegion3D/Geometry/Divider"]
+mesh = SubResource("Mesh_Divider")
+surface_material_override/0 = SubResource("Mat_wall")
+
+[node name="PillarA" type="StaticBody3D" parent="NavigationRegion3D/Geometry"]
+position = Vector3(10, 1, 4)
+
+[node name="Shape" type="CollisionShape3D" parent="NavigationRegion3D/Geometry/PillarA"]
+shape = SubResource("Shape_PillarA")
+
+[node name="Mesh" type="MeshInstance3D" parent="NavigationRegion3D/Geometry/PillarA"]
+mesh = SubResource("Mesh_PillarA")
+surface_material_override/0 = SubResource("Mat_wall")
+
+[node name="PillarB" type="StaticBody3D" parent="NavigationRegion3D/Geometry"]
+position = Vector3(-9, 1, 3)
+
+[node name="Shape" type="CollisionShape3D" parent="NavigationRegion3D/Geometry/PillarB"]
+shape = SubResource("Shape_PillarB")
+
+[node name="Mesh" type="MeshInstance3D" parent="NavigationRegion3D/Geometry/PillarB"]
+mesh = SubResource("Mesh_PillarB")
+surface_material_override/0 = SubResource("Mat_wall")
+
+[node name="PillarC" type="StaticBody3D" parent="NavigationRegion3D/Geometry"]
+position = Vector3(17, 1, -14)
+
+[node name="Shape" type="CollisionShape3D" parent="NavigationRegion3D/Geometry/PillarC"]
+shape = SubResource("Shape_PillarC")
+
+[node name="Mesh" type="MeshInstance3D" parent="NavigationRegion3D/Geometry/PillarC"]
+mesh = SubResource("Mesh_PillarC")
+surface_material_override/0 = SubResource("Mat_wall")
+
+[node name="Rock" type="StaticBody3D" parent="NavigationRegion3D/Geometry"]
+position = Vector3(-16, 0.4, -17)
+
+[node name="Shape" type="CollisionShape3D" parent="NavigationRegion3D/Geometry/Rock"]
+shape = SubResource("Shape_Rock")
+
+[node name="Mesh" type="MeshInstance3D" parent="NavigationRegion3D/Geometry/Rock"]
+mesh = SubResource("Mesh_Rock")
+surface_material_override/0 = SubResource("Mat_wall")
+
+[node name="Player" parent="." instance=ExtResource("3_player")]
+position = Vector3(0, 0.1, 16)
+
+[node name="BruteCamp" type="Node3D" parent="."]
+position = Vector3(0, 0, -15)
+script = ExtResource("4_spawner")
+enemy_scene = ExtResource("5_brute")
+count = 2
+spawn_radius = 2.5
+respawn_delay = 10.0
+
+[node name="HexlingCamp" type="Node3D" parent="."]
+position = Vector3(15, 0, -6)
+script = ExtResource("4_spawner")
+enemy_scene = ExtResource("6_hexling")
+count = 2
+spawn_radius = 2.0
+respawn_delay = 10.0
+
+[node name="HoundPack" type="Node3D" parent="."]
+position = Vector3(-14, 0, -8)
+script = ExtResource("4_spawner")
+enemy_scene = ExtResource("7_hound")
+count = 4
+spawn_radius = 2.5
+respawn_delay = 10.0
+
