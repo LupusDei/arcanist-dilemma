@@ -1,0 +1,43 @@
+[gd_resource type="Resource" script_class="EnemyData" format=3]
+
+[ext_resource type="Script" path="res://actors/enemies/core/enemy_data.gd" id="1_data"]
+[ext_resource type="Script" path="res://actors/enemies/core/enemy_loot_table.gd" id="2_table"]
+[ext_resource type="Script" path="res://actors/enemies/core/enemy_loot_entry.gd" id="3_entry"]
+
+[sub_resource type="Resource" id="Entry_bramble_thorn"]
+script = ExtResource("3_entry")
+item_id = &"bramble_thorn"
+chance = 0.6
+count_min = 1
+count_max = 3
+
+[sub_resource type="Resource" id="Entry_minor_health_potion"]
+script = ExtResource("3_entry")
+item_id = &"minor_health_potion"
+chance = 0.2
+count_min = 1
+count_max = 1
+
+[sub_resource type="Resource" id="Loot"]
+script = ExtResource("2_table")
+gold_min = 5
+gold_max = 15
+entries = Array[ExtResource("3_entry")]([SubResource("Entry_bramble_thorn"), SubResource("Entry_minor_health_potion")])
+
+[resource]
+script = ExtResource("1_data")
+display_name = "Bramble Brute"
+max_health = 120.0
+armor = 2.0
+move_speed = 3.2
+xp_value = 25
+aggro_range = 9.0
+leash_range = 22.0
+aggro_delay = 0.6
+attack_range = 2.1
+attack_damage = 18.0
+attack_windup = 0.75
+attack_recovery = 0.5
+attack_cooldown = 1.6
+wander_radius = 2.5
+loot_table = SubResource("Loot")

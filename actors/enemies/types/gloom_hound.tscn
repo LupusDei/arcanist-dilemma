@@ -1,0 +1,162 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://actors/enemies/core/enemy.gd" id="1_enemy"]
+[ext_resource type="Script" path="res://actors/enemies/core/enemy_health.gd" id="2_health"]
+[ext_resource type="Resource" path="res://actors/enemies/types/gloom_hound.tres" id="3_data"]
+
+[sub_resource type="CapsuleShape3D" id="Shape_body"]
+radius = 0.4
+height = 1.1
+
+[sub_resource type="StandardMaterial3D" id="Mat_fur"]
+albedo_color = Color(0.24, 0.27, 0.36, 1)
+roughness = 0.85
+diffuse_mode = 3
+specular_mode = 1
+rim_enabled = true
+rim = 0.35
+rim_tint = 0.6
+
+[sub_resource type="StandardMaterial3D" id="Mat_belly"]
+albedo_color = Color(0.4, 0.43, 0.52, 1)
+roughness = 0.85
+diffuse_mode = 3
+specular_mode = 1
+rim_enabled = true
+rim = 0.35
+rim_tint = 0.6
+
+[sub_resource type="StandardMaterial3D" id="Mat_eye"]
+albedo_color = Color(0.4, 0.95, 1, 1)
+roughness = 0.85
+diffuse_mode = 3
+specular_mode = 1
+rim_enabled = true
+rim = 0.35
+rim_tint = 0.6
+emission_enabled = true
+emission = Color(0.3, 0.9, 1, 1)
+emission_energy_multiplier = 4.0
+
+[sub_resource type="CapsuleMesh" id="Mesh_body"]
+radius = 0.3
+height = 1.25
+
+[sub_resource type="SphereMesh" id="Mesh_head"]
+radius = 0.24
+height = 0.46
+
+[sub_resource type="BoxMesh" id="Mesh_snout"]
+size = Vector3(0.2, 0.16, 0.3)
+
+[sub_resource type="CylinderMesh" id="Mesh_ear"]
+top_radius = 0.0
+bottom_radius = 0.08
+height = 0.22
+
+[sub_resource type="CylinderMesh" id="Mesh_leg"]
+top_radius = 0.06
+bottom_radius = 0.05
+height = 0.45
+
+[sub_resource type="CylinderMesh" id="Mesh_tail"]
+top_radius = 0.02
+bottom_radius = 0.07
+height = 0.55
+
+[sub_resource type="SphereMesh" id="Mesh_eye"]
+radius = 0.04
+height = 0.08
+
+[node name="GloomHound" type="CharacterBody3D"]
+collision_layer = 4
+collision_mask = 5
+script = ExtResource("1_enemy")
+data = ExtResource("3_data")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+position = Vector3(0, 0.55, 0)
+shape = SubResource("Shape_body")
+
+[node name="HealthComponent" type="Node" parent="."]
+script = ExtResource("2_health")
+
+[node name="NavigationAgent3D" type="NavigationAgent3D" parent="."]
+radius = 0.5
+
+[node name="Model" type="Node3D" parent="."]
+
+[node name="Body" type="MeshInstance3D" parent="Model"]
+position = Vector3(0, 0.62, 0)
+rotation = Vector3(1.5708, 0, 0)
+mesh = SubResource("Mesh_body")
+surface_material_override/0 = SubResource("Mat_fur")
+
+[node name="Head" type="MeshInstance3D" parent="Model"]
+position = Vector3(0, 0.86, -0.66)
+mesh = SubResource("Mesh_head")
+surface_material_override/0 = SubResource("Mat_fur")
+
+[node name="Snout" type="MeshInstance3D" parent="Model"]
+position = Vector3(0, 0.8, -0.9)
+mesh = SubResource("Mesh_snout")
+surface_material_override/0 = SubResource("Mat_belly")
+
+[node name="EarL" type="MeshInstance3D" parent="Model"]
+position = Vector3(-0.13, 1.08, -0.62)
+rotation = Vector3(0, 0, 0.3)
+mesh = SubResource("Mesh_ear")
+surface_material_override/0 = SubResource("Mat_fur")
+
+[node name="EarR" type="MeshInstance3D" parent="Model"]
+position = Vector3(0.13, 1.08, -0.62)
+rotation = Vector3(0, 0, -0.3)
+mesh = SubResource("Mesh_ear")
+surface_material_override/0 = SubResource("Mat_fur")
+
+[node name="EyeL" type="MeshInstance3D" parent="Model"]
+position = Vector3(-0.1, 0.92, -0.86)
+mesh = SubResource("Mesh_eye")
+surface_material_override/0 = SubResource("Mat_eye")
+
+[node name="EyeR" type="MeshInstance3D" parent="Model"]
+position = Vector3(0.1, 0.92, -0.86)
+mesh = SubResource("Mesh_eye")
+surface_material_override/0 = SubResource("Mat_eye")
+
+[node name="LegFL" type="MeshInstance3D" parent="Model"]
+position = Vector3(-0.17, 0.22, -0.38)
+mesh = SubResource("Mesh_leg")
+surface_material_override/0 = SubResource("Mat_fur")
+
+[node name="LegFR" type="MeshInstance3D" parent="Model"]
+position = Vector3(0.17, 0.22, -0.38)
+mesh = SubResource("Mesh_leg")
+surface_material_override/0 = SubResource("Mat_fur")
+
+[node name="LegBL" type="MeshInstance3D" parent="Model"]
+position = Vector3(-0.17, 0.22, 0.38)
+mesh = SubResource("Mesh_leg")
+surface_material_override/0 = SubResource("Mat_fur")
+
+[node name="LegBR" type="MeshInstance3D" parent="Model"]
+position = Vector3(0.17, 0.22, 0.38)
+mesh = SubResource("Mesh_leg")
+surface_material_override/0 = SubResource("Mat_fur")
+
+[node name="Tail" type="MeshInstance3D" parent="Model"]
+position = Vector3(0, 0.78, 0.78)
+rotation = Vector3(-0.9, 0, 0)
+mesh = SubResource("Mesh_tail")
+surface_material_override/0 = SubResource("Mat_belly")
+
+[node name="DebugLabel" type="Label3D" parent="."]
+position = Vector3(0, 1.5499999999999998, 0)
+pixel_size = 0.0045
+billboard = 1
+no_depth_test = true
+modulate = Color(1, 1, 1, 0.85)
+outline_size = 8
+font_size = 32
+text = "Monster"
+
