@@ -1,0 +1,184 @@
+{
+	"_comment": "Character creation presets. Kept short on purpose (Reason: boy or girl plus light look customization). Lists match ui/data/ui_character_presets.gd entry for entry and in the same order, so the creation screen's indices map straight onto these ids. ids are stable save keys.",
+	"bodies": [
+		{
+			"id": "boy",
+			"name": "Boy"
+		},
+		{
+			"id": "girl",
+			"name": "Girl"
+		}
+	],
+	"name_max_length": 20,
+	"default_names": {
+		"boy": [
+			"Aren",
+			"Tobin",
+			"Caspian",
+			"Rowan",
+			"Elric"
+		],
+		"girl": [
+			"Lyra",
+			"Maren",
+			"Isolde",
+			"Wren",
+			"Seren"
+		]
+	},
+	"faces": [
+		{
+			"id": "round",
+			"name": "Round"
+		},
+		{
+			"id": "oval",
+			"name": "Oval"
+		},
+		{
+			"id": "heart",
+			"name": "Heart"
+		},
+		{
+			"id": "square",
+			"name": "Square"
+		}
+	],
+	"skins": [
+		{
+			"id": "porcelain",
+			"name": "Porcelain",
+			"color": "#f7d9c2"
+		},
+		{
+			"id": "fair",
+			"name": "Fair",
+			"color": "#edc29e"
+		},
+		{
+			"id": "olive",
+			"name": "Olive",
+			"color": "#cc9e73"
+		},
+		{
+			"id": "tan",
+			"name": "Tan",
+			"color": "#b28057"
+		},
+		{
+			"id": "brown",
+			"name": "Brown",
+			"color": "#855738"
+		},
+		{
+			"id": "deep",
+			"name": "Deep",
+			"color": "#543624"
+		}
+	],
+	"hair_styles": [
+		{
+			"id": "short",
+			"name": "Short"
+		},
+		{
+			"id": "tousled",
+			"name": "Tousled"
+		},
+		{
+			"id": "long",
+			"name": "Long"
+		},
+		{
+			"id": "braid",
+			"name": "Braid"
+		},
+		{
+			"id": "topknot",
+			"name": "Topknot"
+		},
+		{
+			"id": "shaved",
+			"name": "Shaved"
+		}
+	],
+	"hair_colors": [
+		{
+			"id": "black",
+			"name": "Black",
+			"color": "#141212"
+		},
+		{
+			"id": "brown",
+			"name": "Brown",
+			"color": "#54331c"
+		},
+		{
+			"id": "auburn",
+			"name": "Auburn",
+			"color": "#8c381a"
+		},
+		{
+			"id": "blond",
+			"name": "Blond",
+			"color": "#dbb266"
+		},
+		{
+			"id": "ash",
+			"name": "Ash",
+			"color": "#b2ada3"
+		},
+		{
+			"id": "ember",
+			"name": "Ember",
+			"color": "#d9521f"
+		}
+	],
+	"eyes": [
+		{
+			"id": "brown",
+			"name": "Brown",
+			"color": "#613b1f"
+		},
+		{
+			"id": "hazel",
+			"name": "Hazel",
+			"color": "#806b33"
+		},
+		{
+			"id": "green",
+			"name": "Green",
+			"color": "#408c4c"
+		},
+		{
+			"id": "blue",
+			"name": "Blue",
+			"color": "#407acc"
+		},
+		{
+			"id": "grey",
+			"name": "Grey",
+			"color": "#8c949e"
+		},
+		{
+			"id": "violet",
+			"name": "Violet",
+			"color": "#8c59cc"
+		}
+	],
+	"builds": [
+		{
+			"id": "slight",
+			"name": "Slight"
+		},
+		{
+			"id": "average",
+			"name": "Average"
+		},
+		{
+			"id": "sturdy",
+			"name": "Sturdy"
+		}
+	]
+}

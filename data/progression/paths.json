@@ -1,0 +1,425 @@
+{
+	"_comment": "Paths (chosen at level 5) and specializations (chosen at level 10). 'proposed' specializations are Claude's suggestions Reason has not confirmed. talent_rows is empty where the doc only has a capstone so far. suggested_weights drive the auto-assign button and come from the doc's example level 20 builds (points above 10).",
+	"unpathed": {
+		"suggested_weights": {
+			"strength": 1,
+			"vitality": 1,
+			"dexterity": 1,
+			"intelligence": 1,
+			"wisdom": 1
+		}
+	},
+	"paths": [
+		{
+			"id": "wizard",
+			"name": "Wizard",
+			"description": "Spellbooks, the widest and most complex spells, slow to cast.",
+			"spell_growth": {
+				"type": "spellbook_slots",
+				"slots_per_level": 1,
+				"circle_levels": [
+					1,
+					4,
+					7,
+					10,
+					13,
+					16,
+					19
+				],
+				"key_quest_bonus": "rare_spellbook"
+			},
+			"suggested_weights": {
+				"strength": 5,
+				"vitality": 20,
+				"dexterity": 15,
+				"intelligence": 45,
+				"wisdom": 15
+			},
+			"specializations": [
+				{
+					"id": "archivist",
+					"name": "Archivist",
+					"proposed": true,
+					"exclusive": [
+						"Ritual of Ruin",
+						"Grand Ward",
+						"Index"
+					],
+					"capstone": {
+						"id": "recall",
+						"name": "Recall",
+						"description": "Cast any spell in your book, prepared or not, once per fight"
+					},
+					"suggested_weights": {
+						"strength": 0,
+						"vitality": 15,
+						"dexterity": 15,
+						"intelligence": 50,
+						"wisdom": 15
+					},
+					"talent_rows": []
+				},
+				{
+					"id": "runesmith",
+					"name": "Runesmith",
+					"proposed": true,
+					"exclusive": [
+						"Rune Trap",
+						"Glyph Wall",
+						"Detonate"
+					],
+					"capstone": {
+						"id": "runic_mastery",
+						"name": "Runic Mastery",
+						"description": "Runes trigger instantly and rearm once"
+					},
+					"suggested_weights": {
+						"strength": 20,
+						"vitality": 30,
+						"dexterity": 10,
+						"intelligence": 30,
+						"wisdom": 5
+					},
+					"talent_rows": []
+				},
+				{
+					"id": "conjurer",
+					"name": "Conjurer",
+					"proposed": true,
+					"exclusive": [
+						"Bound Hound",
+						"Stone Servant",
+						"Swap"
+					],
+					"capstone": {
+						"id": "legion",
+						"name": "Legion",
+						"description": "Keep up to three summons at once"
+					},
+					"suggested_weights": {
+						"strength": 5,
+						"vitality": 25,
+						"dexterity": 10,
+						"intelligence": 40,
+						"wisdom": 15
+					},
+					"talent_rows": []
+				}
+			]
+		},
+		{
+			"id": "mage",
+			"name": "Mage",
+			"description": "Verb and noun spells discovered by experiment; power from understanding the universe.",
+			"spell_growth": {
+				"type": "insight",
+				"first_insight_level": 6,
+				"insight_every": 2,
+				"starting_spells": [
+					"burn_air",
+					"move_metal",
+					"bind_mind"
+				],
+				"compound_level": 12,
+				"compound_insight_cost": 2,
+				"key_quest_bonus": "insight"
+			},
+			"suggested_weights": {
+				"strength": 5,
+				"vitality": 20,
+				"dexterity": 20,
+				"intelligence": 40,
+				"wisdom": 10
+			},
+			"specializations": [
+				{
+					"id": "chronos",
+					"name": "Chronos",
+					"proposed": false,
+					"exclusive": [
+						"Hasten",
+						"Slow",
+						"Time"
+					],
+					"capstone": {
+						"id": "paradox",
+						"name": "Paradox",
+						"description": "Every 20 seconds, your next spell is instant and free"
+					},
+					"suggested_weights": {
+						"strength": 0,
+						"vitality": 20,
+						"dexterity": 25,
+						"intelligence": 40,
+						"wisdom": 10
+					},
+					"talent_rows": [
+						{
+							"level": 10,
+							"options": [
+								{
+									"id": "echo",
+									"name": "Echo",
+									"description": "20% chance a spell repeats at half power"
+								},
+								{
+									"id": "borrowed_seconds",
+									"name": "Borrowed Seconds",
+									"description": "Blink returns you to where you stood 3 seconds ago, restoring health lost since"
+								},
+								{
+									"id": "wide_slow",
+									"name": "Wide Slow",
+									"description": "Slow pairs hit an area instead of one target"
+								}
+							]
+						},
+						{
+							"level": 12,
+							"options": [
+								{
+									"id": "rewind",
+									"name": "Rewind",
+									"description": "Once per 90 seconds, a killing blow rewinds you 4 seconds instead"
+								},
+								{
+									"id": "time_armor",
+									"name": "Time Armor",
+									"description": "Attackers are slowed 20%"
+								},
+								{
+									"id": "stasis",
+									"name": "Stasis",
+									"description": "Freeze yourself, invulnerable for 3 seconds"
+								}
+							]
+						},
+						{
+							"level": 14,
+							"options": [
+								{
+									"id": "stolen_time",
+									"name": "Stolen Time",
+									"description": "Killing a slowed enemy refunds 10% mana"
+								},
+								{
+									"id": "patience",
+									"name": "Patience",
+									"description": "Spells cast after standing still 1 second cost 30% less"
+								},
+								{
+									"id": "quickening",
+									"name": "Quickening",
+									"description": "+50% mana regeneration while hasted"
+								}
+							]
+						},
+						{
+							"level": 16,
+							"options": [
+								{
+									"id": "freeze_frame",
+									"name": "Freeze Frame",
+									"description": "New spell that stops all enemies in an area for 2 seconds"
+								},
+								{
+									"id": "age",
+									"name": "Age",
+									"description": "Slowed enemies lose 30% armor over 6 seconds"
+								},
+								{
+									"id": "loop",
+									"name": "Loop",
+									"description": "Damage over time ticks twice as fast"
+								}
+							]
+						},
+						{
+							"level": 18,
+							"options": [
+								{
+									"id": "foresight",
+									"name": "Foresight",
+									"description": "See enemy attacks 0.5 seconds early as ground markers"
+								},
+								{
+									"id": "long_hour",
+									"name": "Long Hour",
+									"description": "All durations +25%"
+								},
+								{
+									"id": "tempo",
+									"name": "Tempo",
+									"description": "Each different spell cast in a row gives +5% cast speed, stacking to 5"
+								}
+							]
+						},
+						{
+							"level": 20,
+							"options": [
+								{
+									"id": "paradox",
+									"name": "Paradox",
+									"description": "Every 20 seconds, your next spell is instant and free"
+								},
+								{
+									"id": "chronarch",
+									"name": "Chronarch",
+									"description": "Your Slow also hastes you by the same amount"
+								},
+								{
+									"id": "second_self",
+									"name": "Second Self",
+									"description": "Summon your past self, which repeats your last 4 casts"
+								}
+							]
+						}
+					]
+				},
+				{
+					"id": "elemental",
+					"name": "Elemental",
+					"proposed": false,
+					"exclusive": [
+						"Fuse",
+						"Storm",
+						"Magma"
+					],
+					"capstone": {
+						"id": "confluence",
+						"name": "Confluence",
+						"description": "Element pairs react (water then freeze shatters, air then burn explodes) for double damage"
+					},
+					"suggested_weights": {
+						"strength": 5,
+						"vitality": 20,
+						"dexterity": 15,
+						"intelligence": 45,
+						"wisdom": 10
+					},
+					"talent_rows": []
+				},
+				{
+					"id": "quantum",
+					"name": "Quantum",
+					"proposed": false,
+					"exclusive": [
+						"Phase",
+						"Matter",
+						"Energy"
+					],
+					"capstone": {
+						"id": "superposition",
+						"name": "Superposition",
+						"description": "Your spells hit from two places at once"
+					},
+					"suggested_weights": {
+						"strength": 25,
+						"vitality": 20,
+						"dexterity": 10,
+						"intelligence": 35,
+						"wisdom": 5
+					},
+					"talent_rows": []
+				}
+			]
+		},
+		{
+			"id": "sorcerer",
+			"name": "Sorcerer",
+			"description": "Innate arcane power; control unlocks spells with level. Simple, fast, very frequent.",
+			"spell_growth": {
+				"type": "spell_points",
+				"points_at_path_choice": 4,
+				"points_per_level": 1,
+				"tree_row_levels": [
+					5,
+					8,
+					11,
+					14,
+					17,
+					20
+				],
+				"key_quest_bonus": "spell_point"
+			},
+			"suggested_weights": {
+				"strength": 10,
+				"vitality": 45,
+				"dexterity": 20,
+				"intelligence": 0,
+				"wisdom": 20
+			},
+			"specializations": [
+				{
+					"id": "stormborn",
+					"name": "Stormborn",
+					"proposed": true,
+					"exclusive": [
+						"Tempest",
+						"Arc Dash",
+						"Thunderclap"
+					],
+					"capstone": {
+						"id": "living_storm",
+						"name": "Living Storm",
+						"description": "While overstrained, lightning strikes nearby enemies on its own"
+					},
+					"suggested_weights": {
+						"strength": 0,
+						"vitality": 45,
+						"dexterity": 30,
+						"intelligence": 0,
+						"wisdom": 20
+					},
+					"talent_rows": []
+				},
+				{
+					"id": "mindforce",
+					"name": "Mindforce",
+					"proposed": true,
+					"exclusive": [
+						"Telekinetic Storm",
+						"Mind Spike",
+						"Kinetic Armor"
+					],
+					"capstone": {
+						"id": "gravity_well",
+						"name": "Gravity Well",
+						"description": "Hurled objects pull enemies in as they fly"
+					},
+					"suggested_weights": {
+						"strength": 30,
+						"vitality": 40,
+						"dexterity": 5,
+						"intelligence": 0,
+						"wisdom": 20
+					},
+					"talent_rows": []
+				},
+				{
+					"id": "wild_surge",
+					"name": "Wild Surge",
+					"proposed": true,
+					"exclusive": [
+						"Reroll",
+						"Mirror Surge",
+						"Cataclysm"
+					],
+					"capstone": {
+						"id": "embrace_the_wild",
+						"name": "Embrace the Wild",
+						"description": "Overstrain no longer hurts you, but every spell rolls a random surge"
+					},
+					"suggested_weights": {
+						"strength": 10,
+						"vitality": 45,
+						"dexterity": 20,
+						"intelligence": 0,
+						"wisdom": 20
+					},
+					"talent_rows": []
+				}
+			]
+		}
+	]
+}
