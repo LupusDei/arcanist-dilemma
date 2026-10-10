@@ -2,7 +2,7 @@ extends Node3D
 ## Combat sandbox: try every path's spells on practice dummies.
 ## Open res://systems/combat/sandbox/combat_sandbox.tscn and press F6.
 ##
-## WASD move · mouse aims · left click cantrip · right click / 1-6 bar spells
+## WASD move · mouse aims · left click cantrip (hold to charge Spark) · right click / 1-6 bar spells
 ## F1 tricks · F2 wizard · F3 mage · F4 sorcerer · T rest · R reset dummies
 
 const SPEED := 6.0
@@ -13,6 +13,7 @@ var _camera: Camera3D
 var _hud: Label
 var _last_event := ""
 var _dummies: Array[TargetDummy] = []
+var feedback: CombatFeedback
 
 
 func _ready() -> void:
@@ -46,9 +47,15 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.pressed:
 		match event.button_index:
 			MOUSE_BUTTON_LEFT:
-				caster.cast_cantrip(_mouse_aim())
+				var cantrip := caster.get_cantrip()
+				if cantrip and cantrip.chargeable:
+					caster.begin_charge(cantrip)
+				else:
+					caster.cast_cantrip(_mouse_aim())
 			MOUSE_BUTTON_RIGHT:
 				caster.cast_slot(6, _mouse_aim())
+	elif event is InputEventMouseButton and not event.pressed and event.button_index == MOUSE_BUTTON_LEFT and caster.is_charging():
+		caster.release_charge(_mouse_aim())
 	elif event is InputEventKey and event.pressed and not event.echo:
 		var key: Key = event.physical_keycode
 		if key >= KEY_1 and key <= KEY_6:
@@ -122,6 +129,11 @@ func _build_environment() -> void:
 	env.environment.background_color = Color(0.16, 0.17, 0.22)
 	env.environment.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
 	env.environment.ambient_light_color = Color(0.5, 0.5, 0.55)
+	# Same tonemap and bloom as the world, so spell effects read the same here.
+	env.environment.tonemap_mode = Environment.TONE_MAPPER_FILMIC
+	env.environment.tonemap_white = 4.0
+	env.environment.glow_enabled = true
+	env.environment.glow_bloom = 0.04
 	add_child(env)
 	var sun := DirectionalLight3D.new()
 	sun.rotation_degrees = Vector3(-55, 35, 0)
@@ -179,6 +191,11 @@ func _build_caster() -> void:
 	caster.effects_parent = self
 	_body.add_child(caster)
 	add_child(_body)
+	feedback = CombatFeedback.new()
+	feedback.caster = caster
+	# The sandbox aims with the cursor, so no center reticle.
+	feedback.show_reticle = false
+	_body.add_child(feedback)
 	caster.misfired.connect(func(s: SpellData) -> void: _last_event = "%s misfired! Sparks fly harmlessly." % s.display_name)
 	caster.cast_failed.connect(func(s: SpellData, reason: StringName) -> void:
 		_last_event = "%s: %s" % [s.display_name if s else "Empty slot", String(reason).replace("_", " ")])

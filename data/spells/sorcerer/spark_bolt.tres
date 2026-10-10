@@ -3,6 +3,7 @@
 [ext_resource type="Script" path="res://systems/combat/effects/spell_effect.gd" id="1_obn4w"]
 [ext_resource type="Script" path="res://systems/combat/effects/damage_effect.gd" id="2_hmvfg"]
 [ext_resource type="Script" path="res://systems/combat/spells/spell_data.gd" id="3_7ojv5"]
+[ext_resource type="Resource" path="res://data/spells/visuals/storm_bolt.tres" id="4_hmvfg"]
 
 [sub_resource type="Resource" id="Resource_nuj5y"]
 script = ExtResource("2_hmvfg")
@@ -17,6 +18,7 @@ path = 3
 damage_type = 3
 cost = 8.0
 projectile_speed = 32.0
+visual = ExtResource("4_hmvfg")
 effects = Array[ExtResource("1_obn4w")]([SubResource("Resource_nuj5y")])
 tree_branch = &"storm"
 synergy_id = &"static_field"

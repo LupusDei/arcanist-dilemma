@@ -7,6 +7,9 @@ extends Node
 ## number keys until it does:
 ##   cast_cantrip (left click), cast_main (right click), spell_1 .. spell_6 (1-6)
 ## Bar slots 0-5 are keys 1-6; slot 6 is the right-click main spell.
+## A chargeable cantrip (Spark) charges while the button is held and fires on
+## release; a quick click fires at once. Adds a CombatFeedback for the
+## reticle, hit markers, damage numbers and camera kick.
 
 const MAIN_SLOT := 6
 const AIM_DISTANCE := 60.0
@@ -14,21 +17,37 @@ const AIM_DISTANCE := 60.0
 @export var caster: SpellCaster
 ## Aim at the screen center (third-person, captured mouse) or at the mouse cursor.
 @export var aim_at_cursor := false
+## Reticle, hit markers, damage numbers and camera kick.
+@export var feedback := true
+
+var combat_feedback: CombatFeedback
 
 
 func _ready() -> void:
 	if caster == null:
 		caster = get_parent().get_node_or_null(^"SpellCaster") as SpellCaster
+	if feedback and caster:
+		combat_feedback = CombatFeedback.new()
+		combat_feedback.caster = caster
+		add_child(combat_feedback)
 
 
 func _unhandled_input(event: InputEvent) -> void:
 	if caster == null:
 		return
+	if caster.is_charging() and _released(event, &"cast_cantrip", MOUSE_BUTTON_LEFT):
+		caster.release_charge(get_aim_point())
+		get_viewport().set_input_as_handled()
+		return
 	var slot := _slot_for(event)
 	if slot == -2:
 		return
 	if slot == -1:
-		caster.cast_cantrip(get_aim_point())
+		var cantrip := caster.get_cantrip()
+		if cantrip and cantrip.chargeable:
+			caster.begin_charge(cantrip)
+		else:
+			caster.cast_cantrip(get_aim_point())
 	else:
 		caster.cast_slot(slot, get_aim_point())
 	get_viewport().set_input_as_handled()
@@ -44,6 +63,21 @@ func _slot_for(event: InputEvent) -> int:
 		if _pressed(event, StringName("spell_%d" % (i + 1)), MOUSE_BUTTON_NONE, KEY_1 + i):
 			return i
 	return -2
+
+
+func _released(event: InputEvent, action: StringName, button: MouseButton) -> bool:
+	if InputMap.has_action(action):
+		return event.is_action_released(action)
+	if event is InputEventMouseButton:
+		var mouse := event as InputEventMouseButton
+		return not mouse.pressed and mouse.button_index == button
+	return false
+
+
+func _notification(what: int) -> void:
+	# Losing focus mid-charge would leave the button "held" forever: fire it.
+	if what == NOTIFICATION_APPLICATION_FOCUS_OUT and caster and caster.is_charging():
+		caster.release_charge(get_aim_point())
 
 
 func _pressed(event: InputEvent, action: StringName, button: MouseButton, key: Key) -> bool:

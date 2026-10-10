@@ -16,7 +16,9 @@ func apply(target: HealthComponent, context: SpellContext, _impact: Vector3) -> 
 	var hit := Hit.new(total, kind, context.caster)
 	hit.is_crit = context.is_crit
 	hit.spell = context.spell
-	target.take_damage(hit)
+	var taken := target.take_damage(hit)
+	if context.caster_node and is_instance_valid(context.caster_node) and taken > 0.0:
+		context.caster_node.report_hit(target, taken, context.is_crit, context.spell, context.charge)
 
 
 func describe(context: SpellContext) -> String:

@@ -21,6 +21,14 @@ signal cooldown_started(spell: SpellData, duration: float)
 signal resource_changed(current: float, maximum: float)
 ## The source or bar contents changed (UI should redraw the bar).
 signal bar_changed
+## A chargeable spell started gathering power (button held).
+signal charge_started(spell: SpellData)
+## The charge reached full.
+signal charge_full(spell: SpellData)
+## The charge ended: released (fired) or cancelled.
+signal charge_ended(spell: SpellData, released: bool)
+## One of this caster's spells damaged something. `charge` is 0 to 1.
+signal hit_landed(target: HealthComponent, amount: float, is_crit: bool, killed: bool, spell: SpellData, charge: float)
 
 const COMBAT_LINGER := 5.0
 
@@ -42,6 +50,12 @@ var _cast_aim := Vector3.ZERO
 ## Spell id -> seconds left.
 var _cooldowns: Dictionary = {}
 var _combat_timer := 0.0
+var _charging: SpellData
+var _charge_time := 0.0
+var _charge_full_sent := false
+## Charge (0 to 1) of the most recent cast.
+var last_charge := 0.0
+var _launch_rig: Node
 
 
 func _ready() -> void:
@@ -65,6 +79,15 @@ func _process(delta: float) -> void:
 		_cooldowns[id] -= delta
 		if _cooldowns[id] <= 0.0:
 			_cooldowns.erase(id)
+	if _charging:
+		if health and (health.is_dead or health.is_stunned()):
+			cancel_charge()
+		else:
+			_charge_time += delta
+			_update_rig_magic(get_charge())
+			if not _charge_full_sent and _charge_time >= _charging.max_charge_time:
+				_charge_full_sent = true
+				charge_full.emit(_charging)
 	if _casting:
 		if health and (health.is_dead or health.is_stunned()):
 			interrupt()
@@ -155,7 +178,7 @@ func check_cast(spell: SpellData, aim_point := Vector3.ZERO) -> StringName:
 		return &"dead"
 	if health and health.is_stunned():
 		return &"stunned"
-	if _casting:
+	if _casting or _charging:
 		return &"busy"
 	if _cooldowns.has(spell.id):
 		return &"cooldown"
@@ -172,6 +195,8 @@ func check_cast(spell: SpellData, aim_point := Vector3.ZERO) -> StringName:
 
 ## Cancels the current cast. Nothing is spent.
 func interrupt() -> void:
+	if _charging:
+		cancel_charge()
 	if _casting == null:
 		return
 	var spell := _casting
@@ -183,12 +208,108 @@ func is_casting() -> bool:
 	return _casting != null
 
 
+## Starts gathering power for a chargeable spell (the button is held).
+## Returns false and emits cast_failed if it can't start. Release with
+## `release_charge`; a quick tap fires an ordinary cast.
+func begin_charge(spell: SpellData) -> bool:
+	if spell == null or not spell.chargeable:
+		return false
+	var reason := check_cast(spell)
+	if reason != &"":
+		cast_failed.emit(spell, reason)
+		return false
+	_charging = spell
+	_charge_time = 0.0
+	_charge_full_sent = false
+	_combat_timer = COMBAT_LINGER
+	charge_started.emit(spell)
+	cast_started.emit(spell, spell.max_charge_time)
+	return true
+
+
+## Fires the charging spell at `aim_point` with whatever charge it has built.
+func release_charge(aim_point: Vector3) -> bool:
+	if _charging == null:
+		return false
+	var spell := _charging
+	var charge := get_charge()
+	_charging = null
+	_update_rig_magic(0.0)
+	charge_ended.emit(spell, true)
+	if caster_resource and not caster_resource.can_pay(get_cost(spell)):
+		cast_failed.emit(spell, &"no_resource")
+		return false
+	_resolve(spell, aim_point, charge)
+	return true
+
+
+func cancel_charge() -> void:
+	if _charging == null:
+		return
+	var spell := _charging
+	_charging = null
+	_update_rig_magic(0.0)
+	charge_ended.emit(spell, false)
+	cast_interrupted.emit(spell)
+
+
+func is_charging() -> bool:
+	return _charging != null
+
+
+## 0 to 1. Holding shorter than the spell's tap time counts as no charge.
+func get_charge() -> float:
+	if _charging == null:
+		return 0.0
+	var span := maxf(_charging.max_charge_time - _charging.charge_tap_time, 0.01)
+	return clampf((_charge_time - _charging.charge_tap_time) / span, 0.0, 1.0)
+
+
+## Where spells leave the body: the character's casting hand when the model
+## offers one (anything with get_cast_point()), otherwise this node.
+func get_launch_point() -> Vector3:
+	if not is_inside_tree():
+		return Vector3.ZERO
+	if _launch_rig == null or not is_instance_valid(_launch_rig) or not _launch_rig.is_inside_tree():
+		_launch_rig = _find_rig()
+	if _launch_rig:
+		var point = _launch_rig.call(&"get_cast_point")
+		if point is Node3D and is_instance_valid(point):
+			return (point as Node3D).global_position
+	return global_position
+
+
+## Called by damage effects when one of this caster's spells lands.
+func report_hit(target: HealthComponent, amount: float, is_crit: bool, spell: SpellData, charge: float) -> void:
+	hit_landed.emit(target, amount, is_crit, target.is_dead, spell, charge)
+
+
+func _find_rig() -> Node:
+	var body := get_parent()
+	if body == null:
+		return null
+	for node in body.find_children("*", "", true, false):
+		if node.has_method(&"get_cast_point"):
+			return node
+	return null
+
+
+## Lets the character model show magic gathering in its hands, if it can.
+func _update_rig_magic(level: float) -> void:
+	if _launch_rig == null or not is_instance_valid(_launch_rig):
+		_launch_rig = _find_rig()
+	if _launch_rig and _launch_rig.has_method(&"set_magic_level"):
+		_launch_rig.call(&"set_magic_level", level)
+
+
 func get_casting_spell() -> SpellData:
 	return _casting
 
 
 ## 0 to 1 while casting, 0 otherwise.
 func get_cast_progress() -> float:
+	if _charging:
+		return get_charge()
 	return clampf(_cast_elapsed / _cast_duration, 0.0, 1.0) if _casting and _cast_duration > 0.0 else 0.0
 
 
@@ -232,7 +353,7 @@ func end_rest() -> void:
 	bar_changed.emit()
 
 
-func _resolve(spell: SpellData, aim_point: Vector3) -> void:
+func _resolve(spell: SpellData, aim_point: Vector3, charge := 0.0) -> void:
 	# Re-check what may have changed during a cast time.
 	var cost := get_cost(spell)
 	if caster_resource and not caster_resource.pay(cost):
@@ -254,8 +375,11 @@ func _resolve(spell: SpellData, aim_point: Vector3) -> void:
 		misfired.emit(spell)
 		return
 
+	last_charge = charge
 	var context := _make_context(spell)
-	SpellDelivery.deliver(spell, context, global_position, aim_point, _get_effects_parent())
+	context.charge = charge
+	context.power *= lerpf(1.0, spell.charge_power, charge)
+	SpellDelivery.deliver(spell, context, get_launch_point(), aim_point, _get_effects_parent())
 	if health and not spell.caster_effects.is_empty():
 		SpellDelivery.apply_to(spell.caster_effects, health, context, global_position)
 	if source:
@@ -268,6 +392,7 @@ func _make_context(spell: SpellData) -> SpellContext:
 	context.spell = spell
 	context.caster = get_parent() as Node3D if get_parent() is Node3D else self
 	context.caster_health = health
+	context.caster_node = self
 	context.team = health.team if health else team
 	context.power = get_power(spell)
 	context.force_power = stats.force_power
