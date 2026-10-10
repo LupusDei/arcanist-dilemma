@@ -85,9 +85,11 @@ def build_parts(joints, dims, body, build, age):
     rib = (0.16 * sh * (0.95 if girl else 1.0), 0.15, 0.112)
     add(lambda p: sdf.ellipsoid(p, chest + (0, 0.135, cz), rib), TOP, [("Chest", 1.0)])
     sl, sr = O["ShoulderL"], O["ShoulderR"]
-    add(lambda p: sdf.capsule(p, sl + (0.03, -0.015, 0), sr + (-0.03, -0.015, 0), 0.062 * (0.92 if girl else 1.0)), TOP, [("Chest", 1.0)])
-    add(lambda p: sdf.ellipsoid(p, spine + (0, 0.12, 0.0), (0.13 * w, 0.13, 0.1)), TOP, [("Spine", 0.7), ("Chest", 0.3)])
-    add(lambda p: sdf.ellipsoid(p, spine + (0, 0.015, 0.0), (0.142 * w, 0.06, 0.11)), TOP, [("Spine", 0.6), ("Hips", 0.4)])
+    add(lambda p: sdf.capsule(p, sl + (0.03, -0.015, 0), sr + (-0.03, -0.015, 0), 0.052 * (0.92 if girl else 1.0)), TOP, [("Chest", 1.0)])
+    # A boy's shirt hangs straight and loose; a girl's comes in a little at the waist.
+    loose = 1.0 if girl else 1.1
+    add(lambda p: sdf.ellipsoid(p, spine + (0, 0.12, 0.0), (0.13 * w * loose, 0.13, 0.1)), TOP, [("Spine", 0.7), ("Chest", 0.3)])
+    add(lambda p: sdf.ellipsoid(p, spine + (0, 0.025, 0.0), (0.142 * w * (loose * 0.5 + 0.5), 0.07, 0.11)), TOP, [("Spine", 0.6), ("Hips", 0.4)])
     if girl and not child:
         for sx in (-1, 1):
             add(lambda p, sx=sx: sdf.sphere(p, chest + (sx * 0.062, 0.12, -0.062), 0.052), TOP, [("Chest", 1.0)], k=0.045)
@@ -106,30 +108,70 @@ def build_parts(joints, dims, body, build, age):
         th_o, kn_o, ft_o = O["Thigh" + s], O["Knee" + s], O["Foot" + s]
         # Arms in sleeves: the shoulder cap, upper arm, forearm and the cuff at the wrist.
         ua = 0.052 * lr * (0.88 if girl else 1.0)
-        add(lambda p, a=sh_o: sdf.sphere(p, a + (-sx * 0.005, -0.01, 0), ua * 1.25), TOP, [("Shoulder" + s, 0.6), ("Chest", 0.4)])
+        add(lambda p, a=sh_o: sdf.sphere(p, a + (-sx * 0.008, -0.012, 0), ua * 1.08), TOP, [("Shoulder" + s, 0.6), ("Chest", 0.4)])
         add(lambda p, a=sh_o, b=el_o: sdf.capsule(p, a, b, ua * 1.12, ua * 0.92), TOP, ("Shoulder" + s, "Elbow" + s, "Chest"), seg=(sh_o, el_o))
         wrist = el_o + (ha_o - el_o) * 0.97
         add(lambda p, a=el_o, b=wrist: sdf.capsule(p, a, b, ua * 0.92, ua * 0.86), TOP, ("Elbow" + s, "Hand" + s, None), seg=(el_o, ha_o))
         cuff_c = el_o + (ha_o - el_o) * 0.9
         axis = (ha_o - el_o) / np.linalg.norm(ha_o - el_o)
         add(lambda p, c=cuff_c, ax=axis: _ring_axis(p, c, ax, ua * 0.9, 0.011), TOP, [("Elbow" + s, 0.6), ("Hand" + s, 0.4)], k=0.008)
-        # Legs: trousers to the boot tops, then boots with a folded cuff.
+        # Legs: loose trousers rolled up to mid-calf, socks, and chunky ankle boots.
         tr = 0.078 * lr * (1.04 if girl else 1.0)
-        add(lambda p, a=th_o, b=kn_o: sdf.capsule(p, a + (0, 0.02, 0), b, tr, tr * 0.72), BOTTOM, ("Thigh" + s, "Knee" + s, "Hips"), seg=(th_o, kn_o))
-        boot_top = kn_o + (ft_o - kn_o) * 0.42
-        add(lambda p, a=kn_o, b=boot_top: sdf.capsule(p, a, b, tr * 0.72, tr * 0.7), BOTTOM, ("Knee" + s, "Foot" + s, "Thigh" + s), seg=(kn_o, ft_o))
-        # Boots are their own shell over the trouser leg: shaft, folded cuff, foot and sole.
+        add(lambda p, a=th_o, b=kn_o: sdf.capsule(p, a + (0, 0.02, 0), b, tr, tr * 0.78), BOTTOM, ("Thigh" + s, "Knee" + s, "Hips"), seg=(th_o, kn_o))
+        roll = kn_o + (ft_o - kn_o) * 0.42
+        add(lambda p, a=kn_o, b=roll: sdf.capsule(p, a, b, tr * 0.78, tr * 0.8), BOTTOM, ("Knee" + s, "Foot" + s, "Thigh" + s), seg=(kn_o, ft_o))
+        add(lambda p, c=roll + (0, 0.012, 0): _ring(p, c, tr * 0.8, 0.02, 1.0), BOTTOM, [("Knee" + s, 1.0)], k=0.01)
+        add(lambda p, a=roll, b=ft_o: sdf.capsule(p, a, b + (0, 0.02, 0), tr * 0.52, tr * 0.5), INNER, ("Knee" + s, "Foot" + s, None), seg=(kn_o, ft_o))
+        # Boots are their own shell over the sock: ankle shaft, folded cuff, foot, toe, heel and sole.
         g = "boot" + s
-        add(lambda p, a=boot_top, b=ft_o: sdf.capsule(p, a + (0, -0.005, 0), b, tr * 0.8, tr * 0.7), BOOTS, ("Knee" + s, "Foot" + s, None), seg=(kn_o, ft_o), group=g)
-        add(lambda p, c=boot_top + (0, -0.008, 0): _ring(p, c, tr * 0.84, 0.014, 1.0), BOOTS, [("Knee" + s, 1.0)], k=0.008, group=g)
+        boot_top = kn_o + (ft_o - kn_o) * 0.8
+        add(lambda p, a=boot_top, b=ft_o: sdf.capsule(p, a + (0, -0.005, 0), b, tr * 0.68, tr * 0.72), BOOTS, ("Knee" + s, "Foot" + s, None), seg=(kn_o, ft_o), group=g)
+        add(lambda p, c=boot_top + (0, -0.006, 0): _ring(p, c, tr * 0.7, 0.014, 1.0), BOOTS, [("Foot" + s, 1.0)], k=0.008, group=g)
         foot_c = ft_o + (0, -0.03, -0.045)
-        add(lambda p, c=foot_c: sdf.ellipsoid(p, c, (0.054, 0.052, 0.1)), BOOTS, [("Foot" + s, 1.0)], k=0.03, group=g)
-        add(lambda p, c=ft_o: sdf.sphere(p, c + (0, -0.045, -0.12), 0.043), BOOTS, [("Foot" + s, 1.0)], k=0.03, group=g)
-        add(lambda p, c=ft_o: sdf.sphere(p, c + (0, -0.05, 0.035), 0.041), BOOTS, [("Foot" + s, 1.0)], k=0.03, group=g)
-        add(lambda p, c=ft_o: sdf.round_box(p, np.array([c[0], 0.012, c[2] - 0.045]), (0.05, 0.009, 0.118), 0.006), LEATHER, [("Foot" + s, 1.0)], k=0.0, group=g)
-        # The trouser leg runs on down inside the boot.
-        add(lambda p, a=boot_top, b=ft_o: sdf.capsule(p, a, b + (0, 0.02, 0), tr * 0.66, tr * 0.6), BOTTOM, ("Knee" + s, "Foot" + s, None), seg=(kn_o, ft_o))
+        add(lambda p, c=foot_c: sdf.ellipsoid(p, c, (0.058, 0.055, 0.105)), BOOTS, [("Foot" + s, 1.0)], k=0.03, group=g)
+        add(lambda p, c=ft_o: sdf.sphere(p, c + (0, -0.043, -0.125), 0.047), BOOTS, [("Foot" + s, 1.0)], k=0.03, group=g)
+        add(lambda p, c=ft_o: sdf.sphere(p, c + (0, -0.05, 0.035), 0.043), BOOTS, [("Foot" + s, 1.0)], k=0.03, group=g)
+        add(lambda p, c=ft_o: sdf.round_box(p, np.array([c[0], 0.013, c[2] - 0.047]), (0.054, 0.01, 0.124), 0.006), LEATHER, [("Foot" + s, 1.0)], k=0.0, group=g)
+    # The shirt's collar: two flaps lying open around the neck, down to the V.
+    neck = O["Neck"]
+    under = [pt for pt in parts if pt.group is None]
+
+    def onto(q, lift):
+        q = np.array(q, float)[None]
+        f = lambda x: body_sdf(under, x)
+        for _ in range(6):
+            q = q - sdf.gradient(f, q, 0.001) * (f(q) - lift)[:, None]
+        return q[0]
+
+    for sx in (-1, 1):
+        y0 = neck[1] - 0.03
+        chain = [onto(np.array(q), 0.006) for q in (
+            (sx * 0.004, y0 + 0.012, 0.062),
+            (sx * 0.052, y0 + 0.0, 0.03),
+            (sx * 0.064, y0 - 0.012, -0.022),
+            (sx * 0.044, y0 - 0.04, -0.07),
+            (sx * 0.02, y0 - 0.085, -0.095),
+        )]
+        for i in range(len(chain) - 1):
+            add(lambda p, a=chain[i], b=chain[i + 1], i=i: _flat_ribbon(p, a, b, neck + (0, -0.06, 0), 0.02 - 0.002 * i, 0.007), TOP, [("Chest", 0.7), ("Neck", 0.3)], k=0.01, group="collar")
     return parts
+
+
+def _flat_ribbon(p, a, b, centre, half, thick):
+    """A flat strip from a to b, lying on the surface around centre (its width runs away from centre)."""
+    a = np.asarray(a, float)
+    b = np.asarray(b, float)
+    ba = b - a
+    h = np.clip(np.sum((p - a) * ba, axis=-1) / np.dot(ba, ba), 0, 1)
+    perp = p - a - ba[None] * h[:, None]
+    out = (a + b) / 2 - centre
+    out -= ba * np.dot(out, ba) / np.dot(ba, ba)
+    out /= np.linalg.norm(out)
+    side = np.cross(ba / np.linalg.norm(ba), out)
+    u = perp @ side
+    v = perp @ out
+    w = perp @ (ba / np.linalg.norm(ba))
+    return sdf.length(np.stack([np.maximum(np.abs(u) - half, 0), np.maximum(np.abs(v) - thick * 0.5, 0), w], -1)) - 0.003
 
 
 def _ring(p, c, R, r, zscale):

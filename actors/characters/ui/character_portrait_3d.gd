@@ -30,6 +30,8 @@ var _spin := 0.0
 var _dragging := false
 var _idle_time := 0.0
 var _stand: Node3D
+## Turn gently on its own when left alone (off for screenshots).
+var sway := true
 
 const FULL := {"target": Vector3(0, 0.88, 0), "distance": 3.3}
 const FACE := {"target": Vector3(0, 1.5, 0), "distance": 1.05}
@@ -56,25 +58,27 @@ func _build_stage() -> void:
 	e.background_color = Color("#16121f")
 	e.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
 	e.ambient_light_color = Color("#b3b4c8")
-	e.ambient_light_energy = 0.12
+	e.ambient_light_energy = 0.2
 	e.tonemap_mode = Environment.TONE_MAPPER_FILMIC
 	env.environment = e
 	viewport.add_child(env)
-	# Warm key from the front left, cool fill from the right, a violet rim from behind.
+	# Warm key high on the left so the face shows its shape, cool fill from the
+	# right, a violet rim from behind.
 	var key := DirectionalLight3D.new()
-	key.rotation = Vector3(deg_to_rad(-28), deg_to_rad(-140), 0)
+	key.rotation = Vector3(deg_to_rad(-35), deg_to_rad(128), 0)
 	key.light_color = Color("#fff0dc")
-	key.light_energy = 0.36
+	key.light_energy = 0.4
 	key.shadow_enabled = true
-	key.directional_shadow_max_distance = 6.0
-	key.directional_shadow_mode = DirectionalLight3D.SHADOW_ORTHOGONAL
-	key.shadow_opacity = 0.5
-	key.shadow_blur = 2.0
+	key.directional_shadow_max_distance = 4.0
+	key.directional_shadow_mode = DirectionalLight3D.SHADOW_PARALLEL_2_SPLITS
+	key.shadow_normal_bias = 2.0
+	key.shadow_opacity = 0.45
+	key.shadow_blur = 2.5
 	viewport.add_child(key)
 	var fill := DirectionalLight3D.new()
-	fill.rotation = Vector3(deg_to_rad(-10), deg_to_rad(140), 0)
+	fill.rotation = Vector3(deg_to_rad(-10), deg_to_rad(-140), 0)
 	fill.light_color = Color("#9fb8ff")
-	fill.light_energy = 0.06
+	fill.light_energy = 0.14
 	viewport.add_child(fill)
 	var rim := DirectionalLight3D.new()
 	rim.rotation = Vector3(deg_to_rad(-20), deg_to_rad(20), 0)
@@ -140,7 +144,8 @@ func _process(delta: float) -> void:
 		# A slow sway so the model reads as 3D without spinning away from the player.
 		_spin = lerpf(_spin, 0.0, delta * 1.5)
 		_yaw += _spin * delta
-		_yaw = lerpf(_yaw, -0.35 + sin(_idle_time * 0.35) * 0.45, delta * 0.6)
+		if sway:
+			_yaw = lerpf(_yaw, -0.35 + sin(_idle_time * 0.35) * 0.45, delta * 0.6)
 	_stand.rotation.y = _yaw
 	zoom = lerpf(zoom, _zoom_target, delta * 3.0)
 	var target: Vector3 = (FULL.target as Vector3).lerp(FACE.target, zoom) * Vector3(1, rig.get_height() / 1.69, 1)

@@ -1,5 +1,4 @@
 shader_type spatial;
-render_mode diffuse_toon, specular_toon;
 // Skin and clothes of the sculpted characters. The body mesh carries a colour
 // region per vertex in UV2.x (0 skin, 1 top, 2 bottom, 3 boots, 4 leather,
 // 5 trim, 6 inner shirt, 7 hair tie), so one mesh wears any outfit palette.
@@ -28,6 +27,11 @@ uniform float cloth_grain = 0.06;
 // The shirt's open V collar: skin shows above vneck_y + |x| * vneck_slope (rest-pose body space, in UV).
 uniform float vneck_y = 10.0;
 uniform float vneck_slope = 1.6;
+uniform float light_wrap = 0.45;
+uniform vec4 scatter = vec4(1.0, 0.32, 0.22, 0.35);
+uniform float gloss = 0.25;
+
+#include "res://actors/characters/shaders/character_light.gdshaderinc"
 
 varying vec3 base_color;
 varying float region;
@@ -90,8 +94,6 @@ void fragment() {
 	ALBEDO = color;
 	ROUGHNESS = 0.82;
 	SPECULAR = 0.12;
-	RIM = 0.2;
-	RIM_TINT = 0.6;
 	// Light bleeding through skin keeps faces from going grey in shadow.
 	EMISSION = vec3(1.0, 0.35, 0.3) * flash * 1.2;
 }

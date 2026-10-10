@@ -4,6 +4,10 @@ The arcanist (boy or girl, with the creation presets), path outfits, animations,
 
 ![The creation screen with the live 3D model](docs/creation-screen.jpg)
 
+The second pass, after Reason's feedback that the boy read as a girl with a pointy chin: before, and the same options after.
+
+![Before and after](docs/before-after.jpg)
+
 Every creation option, rendered in the real creation portrait:
 
 ![Faces](docs/creation-faces.jpg)
@@ -107,9 +111,10 @@ Cast, hit and talk only drive the upper body, so the legs keep running under a c
 
 The heads, hair, beards and bodies in `meshes/` are generated, not hand-modelled. `tools/` holds the generator: signed distance fields sculpted in numpy, polygonised with marching cubes, decimated and projected back onto the surface, then written as `.acm` files that `tools/bake_meshes.gd` turns into `ArrayMesh` resources.
 
-- **Heads** (`gen_heads.py`): one per face × body × age, with sculpted brow, eye sockets, nose, lips and ears, plus eyes, lids, brows and lashes as separate surfaces. Each head carries its eye, mouth and cheek positions as mesh metadata.
-- **Hair** (`gen_hair.py`): a cap cut at the hairline plus groomed locks (tapered ribbons with strand ridges) that drape around the head and shoulders. The shader shades roots darker and tints each lock slightly.
-- **Bodies** (`gen_bodies.py`): one per body × build × age, in farm clothes, skinned to a `Skeleton3D` that mirrors the animation joints (`CharacterRig` copies the joints onto the bones each frame, so every existing animation drives the mesh). Clothing regions are coloured in the shader from a region id, so shirt dye and skin tone are uniforms, not separate meshes.
+- **Heads** (`gen_heads.py`): one per face × body × age. The face is lofted from height profiles (width, front and back depth from the brow to the chin; `LOFT_*`), so jaw and chin lines stay clean; the face presets and boy/girl scale those profiles. Boys get a wider angled jaw, a broad blunt chin, a heavier brow, bigger ears and a thicker neck; girls a softer jaw, a small rounded chin and fuller lips. Brow, eye sockets, nose, lips and ears are sculpted on top, and eyes, lids, brows and lashes are separate surfaces. Each head carries its eye, mouth and cheek positions as mesh metadata.
+- **Hair** (`gen_hair.py`): a cap cut at the hairline plus groomed locks (tapered ribbons with strand ridges) that drape around the head and shoulders. Tousled is the concept boy's crop: spiky locks on top, short sides, ears clear. The shader shades roots darker and tints each lock slightly.
+- **Bodies** (`gen_bodies.py`): one per body × build × age, in farm clothes, skinned to a `Skeleton3D` that mirrors the animation joints (`CharacterRig` copies the joints onto the bones each frame, so every existing animation drives the mesh). Clothing regions are coloured in the shader from a region id, so shirt dye and skin tone are uniforms, not separate meshes. The farm clothes follow the concept turnaround: a loose shirt with an open collar, trousers rolled to mid-calf, socks and chunky ankle boots.
+- **Lighting**: the skin, hair and eye shaders share `shaders/character_light.gdshaderinc`, a soft wrapped diffuse with a warm band where light turns to shadow, a broad highlight and a rim light, instead of flat toon bands, so faces show their shape.
 - If a mesh is missing, `CharacterBuilder` falls back to the primitive model.
 
 Regenerate (needs Python 3 with numpy, scikit-image and pyfqmr):

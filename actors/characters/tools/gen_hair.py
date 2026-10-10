@@ -55,11 +55,11 @@ class Lock:
         self.hi = self.pts.max(axis=0) + pad
 
 
-def grow(root, flow, length, width, lift=(0.02, 0.02), hug=1.0, gravity=0.0, curl=0.0, steps=10, seed=0, taper=0.85, face_stop=0.4, back=0.0):
+def grow(root, flow, length, width, lift=(0.02, 0.02), hug=1.0, gravity=0.0, curl=0.0, steps=10, seed=0, taper=0.85, face_stop=0.4, back=0.0, ear_stop=False):
     """A lock from root (a point on the scalp) growing along flow.
 
     Growth stops where the lock would fall over the eyes (in front of the face,
-    below face_stop * r)."""
+    below face_stop * r), and with ear_stop where it would cover the ears."""
     p = np.asarray(root, float)
     tangent = np.asarray(flow, float)
     tangent /= np.linalg.norm(tangent)
@@ -90,6 +90,8 @@ def grow(root, flow, length, width, lift=(0.02, 0.02), hug=1.0, gravity=0.0, cur
             elif hug > 0 and g < 0.5:
                 q = q - nn * (d - want) * hug * (1 - 2 * g)
         if q[2] < -0.3 * R and q[1] < face_stop * R and abs(q[0]) < 0.78 * R:
+            break
+        if ear_stop and abs(q[0]) > 0.62 * R and q[1] < 0.1 * R and -0.35 * R < q[2] < 0.4 * R:
             break
         p = q
         pts.append(p.copy())
@@ -210,18 +212,23 @@ def style_short():
 
 
 def style_tousled():
-    """The concept boy's: windswept chunks lifting at the tips, a fringe that stops above the brows."""
+    """The concept boy's: a short messy crop. Chunky locks on top flick up and
+    forward, the sides and back are cut short and close, and the ears show."""
     rng = _rng(2)
-    crown = scalp_point(0.4, 1.25)
+    crown = scalp_point(0.5, 1.2)
     locks = []
-    for az, el, root in scalp_roots(160, 0.08, 2):
+    for az, el, root in scalp_roots(230, 0.06, 2):
+        top = np.clip((np.sin(el) - 0.35) / 0.4, 0, 1)
+        front = np.clip((-root[2] / R - 0.1) / 0.6, 0, 1)
         flow = _tangent(root, root + (root - crown))
-        flow = flow / np.linalg.norm(flow) + rng.normal(0, 0.35, 3)
-        front = np.clip((-root[2] / R - 0.2) / 0.6, 0, 1)
-        flow += np.array([0.25, -0.5, -0.3]) * front
-        length = rng.uniform(0.7, 1.0)
-        locks.append(grow(root, flow, length, 0.22, lift=(0.02, rng.uniform(0.07, 0.17)), hug=0.6, seed=rng.random(), taper=0.92, face_stop=0.42))
-    return 0.06, {"front": 0.42}, _keep(locks)
+        flow = flow / max(np.linalg.norm(flow), 1e-6) + rng.normal(0, 0.45, 3) * (0.3 + 0.7 * top)
+        # The fringe sweeps forward and up, a little to one side.
+        flow += np.array([0.3, 0.9, -0.7]) * front * top + np.array([0, 0.5, 0]) * top
+        length = (0.32 + 0.55 * top + 0.15 * front) * rng.uniform(0.8, 1.15)
+        lift = (0.02 + 0.04 * top, 0.03 + rng.uniform(0.12, 0.32) * top)
+        width = 0.15 + 0.07 * top
+        locks.append(grow(root, flow, length, width, lift=lift, hug=1.0 - 0.85 * top, seed=rng.random(), taper=0.95, face_stop=0.5, ear_stop=True, steps=8))
+    return 0.035, {"front": 0.5, "temple": 0.32, "sideburn": 0.0, "nape": -0.45}, _keep(locks)
 
 
 def style_long():
@@ -285,9 +292,9 @@ def style_braid():
     # A loose strand framing each side of the face.
     for side in (-1, 1):
         root = scalp_point(side * 2.3, 0.4, 0.02)
-        locks.append(grow(root, (side * 0.1, -1, -0.15), 1.3, 0.12, lift=(0.02, 0.03), gravity=0.6, seed=rng.random(), taper=0.85))
+        locks.append(grow(root, (side * 0.1, -1, -0.15), 0.85, 0.12, lift=(0.02, 0.03), gravity=0.6, seed=rng.random(), taper=0.85, ear_stop=True))
     # Over the right shoulder, between the neck and the arm, and down the front.
-    braid = _braid_chain(nape, np.array([0.95, -1.35, 0.35]) * R, np.array([0.72, -3.1, -0.95]) * R, 11, 0.3 * R, 0.17 * R)
+    braid = _braid_chain(nape, np.array([0.95, -1.35, 0.35]) * R, np.array([0.72, -3.1, -0.95]) * R, 13, 0.36 * R, 0.24 * R)
     return 0.05, {"front": 0.5, "sideburn": 0.12}, _keep(locks), braid
 
 

@@ -55,6 +55,7 @@ func _init() -> void:
 		p.custom_minimum_size = cell
 		grid.add_child(p)
 		p.character = look
+		p.sway = false
 		p.set_zoom(zoom, -0.3)
 
 
