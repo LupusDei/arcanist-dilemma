@@ -98,9 +98,18 @@ func _ready() -> void:
 ## Scales the 2D layer with the window so text stays readable on big screens.
 func _fit() -> void:
 	var size := get_viewport().get_visible_rect().size
-	var s := maxf(size.y / BASE_HEIGHT, 1.0)
+	var s := ui_scale(self)
 	root.scale = Vector2(s, s)
 	root.size = size / s
+
+
+## How much to scale 2D UI so it reads at the window's size: window height over
+## 900, never below 1. Once the project sets a stretch mode, Godot scales the
+## UI itself, so this returns 1 to avoid scaling twice.
+static func ui_scale(node: Node) -> float:
+	if node.get_window().content_scale_mode != Window.CONTENT_SCALE_MODE_DISABLED:
+		return 1.0
+	return maxf(node.get_viewport().get_visible_rect().size.y / BASE_HEIGHT, 1.0)
 
 
 func _bind_player() -> void:

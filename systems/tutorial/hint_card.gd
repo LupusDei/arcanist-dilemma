@@ -129,7 +129,7 @@ func _clear() -> void:
 
 func _fit() -> void:
 	var size := get_viewport().get_visible_rect().size
-	var s := maxf(size.y / BASE_HEIGHT, 1.0)
+	var s := GameFeedback.ui_scale(self)
 	root.scale = Vector2(s, s)
 	root.size = size / s
 	_pulse.size = size
@@ -230,6 +230,7 @@ func _keycap(text: String) -> PanelContainer:
 
 
 static var _serif_font: SystemFont
+
 
 
 static func _serif() -> Font:

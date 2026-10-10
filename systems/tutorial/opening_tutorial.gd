@@ -467,7 +467,7 @@ func _play_intro() -> void:
 	box.alignment = BoxContainer.ALIGNMENT_CENTER
 	box.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_intro_layer.add_child(box)
-	var s := maxf(get_viewport().get_visible_rect().size.y / HintCard.BASE_HEIGHT, 1.0)
+	var s := GameFeedback.ui_scale(self)
 	for line in [["Prologue", 26, Color(0.8, 0.72, 0.55)], ["Tricks", 72, Color(1.0, 0.86, 0.5)], ["Millbrook, the morning after the harvest fair", 24, Color(0.93, 0.89, 0.8)]]:
 		var label := Label.new()
 		label.text = line[0]
