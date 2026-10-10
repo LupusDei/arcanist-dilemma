@@ -42,6 +42,12 @@ var flicker_lights: Array[OmniLight3D] = []
 var anim_tree: AnimationTree
 ## The shared vertex-coloured material of the merged body parts (see CharacterBuilder.merge_parts).
 var skin_material: StandardMaterial3D
+## True when the model is the sculpted, skinned one (see CharacterMeshes).
+var sculpted := false
+## The sculpted body's skeleton; it copies the joints' poses every frame.
+var skeleton: Skeleton3D
+## Shader materials of the sculpted model (for the hit flash).
+var shader_materials: Array[ShaderMaterial] = []
 ## Names of every part built, including ones merged away (for tests and debugging).
 var built_parts := PackedStringArray()
 
@@ -224,6 +230,9 @@ func clear_model() -> void:
 	flickers.clear()
 	flicker_lights.clear()
 	_materials.clear()
+	shader_materials.clear()
+	skeleton = null
+	sculpted = false
 	built_parts.clear()
 	_rest_rot.clear()
 	_rest_pos.clear()
@@ -278,6 +287,21 @@ func _physics_process(delta: float) -> void:
 	_tick_flash(delta)
 
 
+func _process(_delta: float) -> void:
+	_sync_skeleton()
+
+
+## Copies the joints' poses (set by the animations) onto the skinned body's bones.
+func _sync_skeleton() -> void:
+	if skeleton == null:
+		return
+	for i in skeleton.get_bone_count():
+		var j: Node3D = joints[skeleton.get_bone_name(i)]
+		skeleton.set_bone_pose_position(i, j.position)
+		skeleton.set_bone_pose_rotation(i, j.quaternion)
+		skeleton.set_bone_pose_scale(i, j.scale)
+
+
 func _tick_magic(delta: float) -> void:
 	if _magic_hold > 0.0:
 		_magic_hold -= delta
@@ -306,6 +330,8 @@ func _tick_flash(delta: float) -> void:
 	if _flash <= 0.0:
 		return
 	_flash = maxf(_flash - delta * 5.0, 0.0)
+	for m in shader_materials:
+		m.set_shader_parameter("flash", _flash)
 	for m in _materials:
 		m.emission_enabled = _flash > 0.0
 		m.emission = Color(1.0, 0.35, 0.3)

@@ -15,6 +15,9 @@ func _run() -> void:
 	_test_every_preset_builds()
 	_test_proportions()
 	_test_outfits()
+	_test_sculpted_meshes()
+	await _test_skinning()
+	await _test_creation_portrait()
 	await _test_animations()
 	await _test_follows_progression()
 	await _test_driver_on_player()
@@ -116,7 +119,10 @@ func _test_proportions() -> void:
 		_check(aabb.end.y > 1.5 and aabb.end.y < 1.8, "%s is 1.5 to 1.8m tall, fits the 1.7m capsule (%.2f)" % [body, aabb.end.y])
 		_check(aabb.size.x < 0.8 and aabb.size.z < 0.6, "%s fits the player capsule's footprint (%.2f x %.2f)" % [body, aabb.size.x, aabb.size.z])
 		# Faces the controller's forward (-Z).
-		var nose_z: float = rig.get_joint("Head").get_node("Merged").get_aabb().position.z
+		var head_node: MeshInstance3D = rig.get_joint("Head").get_node_or_null("HeadMesh")
+		if head_node == null:
+			head_node = rig.get_joint("Head").get_node("Merged")
+		var nose_z: float = head_node.get_aabb().position.z * head_node.scale.z
 		_check(nose_z < -rig.dims.head_r * 0.8, "%s faces -Z" % body)
 		_check(rig.get_cast_point().global_position.y > 0.5, "%s cast point is at hand height" % body)
 		rig.free()
@@ -129,7 +135,7 @@ func _test_proportions() -> void:
 
 func _test_outfits() -> void:
 	var expect := {
-		"farm": ["Satchel", "Belt"],
+		"farm": ["Satchel", "BodyMesh"],
 		"wizard": ["Robe", "HatCone", "HemTrim", "Book"],
 		"mage": ["Pack", "Clock", "Frost0", "ClockRing"],
 		"sorcerer": ["CoatSkirt", "HighCollar", "Sash"],
@@ -150,6 +156,65 @@ func _test_outfits() -> void:
 	var meshes := boy.find_children("*", "MeshInstance3D", true, false).size()
 	_check(meshes < 60, "body parts are merged into few meshes (%d)" % meshes)
 	boy.free()
+
+
+func _test_sculpted_meshes() -> void:
+	# Every creation option has its sculpted mesh, so no look falls back to primitives.
+	for body in CharacterStyle.BODIES:
+		for face in CharacterStyle.ids(CharacterStyle.FACES):
+			for age in [1, 0]:
+				var head := CharacterMeshes.head(body, face, age)
+				_check(head != null and head.get_surface_count() == 4, "%s %s head (age %d) is sculpted with eyes, brows and lashes" % [body, face, age])
+		for build in CharacterStyle.ids(CharacterStyle.BUILDS):
+			for age in [1, 0]:
+				var mesh := CharacterMeshes.body(body, build, age)
+				_check(mesh != null and mesh.get_meta("skinned", false), "%s %s body (age %d) is sculpted and skinned" % [body, build, age])
+	for style in CharacterStyle.HAIR_STYLES:
+		_check(CharacterMeshes.hair(style) != null, "%s hair is groomed" % style)
+	for face in CharacterStyle.ids(CharacterStyle.FACES):
+		for kind in ["full", "long"]:
+			_check(CharacterMeshes.beard(face, kind) != null, "%s %s beard is sculpted" % [face, kind])
+	# Changing an option changes the model.
+	var a := CharacterBuilder.build({"sex": 0, "face": 0, "hair": 0, "build": 0})
+	var b := CharacterBuilder.build({"sex": 1, "face": 3, "hair": 2, "build": 2})
+	var a_head: MeshInstance3D = a.get_joint("Head").get_node("HeadMesh")
+	var b_head: MeshInstance3D = b.get_joint("Head").get_node("HeadMesh")
+	_check(a.sculpted and b.sculpted, "the arcanist is the sculpted model")
+	_check(a_head.mesh != b_head.mesh, "face and body options swap the head")
+	_check(a.get_joint("Head").get_node("Hair").mesh != b.get_joint("Head").get_node("Hair").mesh, "hair option swaps the hair")
+	_check(a.skeleton.get_node("BodyMesh").mesh != b.skeleton.get_node("BodyMesh").mesh, "build option swaps the body")
+	a.free()
+	b.free()
+
+
+func _test_skinning() -> void:
+	var rig := CharacterBuilder.build(CharacterSpec.player("girl"))
+	root.add_child(rig)
+	_check(rig.skeleton.get_bone_count() == CharacterBuilder.JOINTS.size(), "skeleton has a bone per joint")
+	rig.update_locomotion(6.5, true)
+	await _frames(20)
+	var worst := 0.0
+	for i in rig.skeleton.get_bone_count():
+		var j: Node3D = rig.joints[rig.skeleton.get_bone_name(i)]
+		var bone_global: Transform3D = rig.skeleton.global_transform * rig.skeleton.get_bone_global_pose(i)
+		worst = maxf(worst, bone_global.origin.distance_to(j.global_position))
+	_check(worst < 0.002, "the skinned body follows the animated joints (off by %.4fm)" % worst)
+	var body: MeshInstance3D = rig.skeleton.get_node("BodyMesh")
+	_check(body.skin != null or body.get_skin_reference() != null, "body mesh is bound to the skeleton")
+	rig.free()
+
+
+func _test_creation_portrait() -> void:
+	var portrait := CharacterPortrait3D.new()
+	root.add_child(portrait)
+	portrait.character = {"sex": 1, "face": 2, "skin": 4, "hair": 3, "hair_color": 2, "eyes": 3, "build": 0}
+	await _frames(2)
+	var spec := portrait.rig.spec
+	_check(spec.body == "girl" and spec.face == "heart" and spec.skin == "brown" and spec.hair_style == "braid", "creation portrait shows the picked look")
+	_check(spec.hair_color == "auburn" and spec.eyes == "blue" and spec.build == "slight", "creation portrait shows the picked colours and build")
+	portrait.character = {"sex": 0, "face": 3, "skin": 0, "hair": 5, "hair_color": 0, "eyes": 0, "build": 2}
+	_check(portrait.rig.spec.body == "boy" and portrait.rig.spec.hair_style == "shaved", "creation portrait follows a change")
+	portrait.queue_free()
 
 
 func _test_animations() -> void:
@@ -222,9 +287,10 @@ func _test_animations() -> void:
 
 	rig.play_hit()
 	await _frames(3)
-	_check(rig.skin_material.emission_enabled, "hit flashes the body")
+	var body_mat: ShaderMaterial = rig.shader_materials[0]
+	_check(float(body_mat.get_shader_parameter("flash")) > 0.0, "hit flashes the body")
 	await _frames(30)
-	_check(not rig.skin_material.emission_enabled, "hit flash fades")
+	_check(float(body_mat.get_shader_parameter("flash")) == 0.0, "hit flash fades")
 
 	rig.play_cast(1.0)
 	await _frames(5)
