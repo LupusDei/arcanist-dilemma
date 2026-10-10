@@ -52,6 +52,7 @@ func _ready() -> void:
 
 	# Damage numbers, XP popups, the crosshair and sounds (systems/feedback).
 	add_child(GameFeedback.new())
+	_fit_reticle.call_deferred()
 
 	_path_choice = PathChoice.new()
 	_path_choice.path_picked.connect(_on_path_picked)
@@ -83,6 +84,14 @@ func _ready() -> void:
 		if node is Enemy:
 			node.show_debug_label = false)
 	_populate_monsters.call_deferred()
+
+
+## The spell reticle only sets its anchors, so under a CanvasLayer it stays 0x0
+## and draws its crosshair in the top-left corner, off screen. Stretch it over
+## the whole view so it draws at the centre, where spells aim.
+func _fit_reticle() -> void:
+	for reticle in _player.find_children("*", "SpellReticle", true, false):
+		reticle.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 
 
 func _unhandled_input(event: InputEvent) -> void:
