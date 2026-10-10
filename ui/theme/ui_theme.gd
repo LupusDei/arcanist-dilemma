@@ -76,7 +76,7 @@ static func _button_style(bg: Color, border: Color) -> StyleBoxFlat:
 
 static func _build() -> Theme:
 	var t := Theme.new()
-	t.default_font_size = 16
+	t.default_font_size = 18
 
 	t.set_color("font_color", "Label", PARCHMENT)
 	t.set_color("font_outline_color", "Label", Color(0, 0, 0, 0.9))
@@ -90,11 +90,11 @@ static func _build() -> Theme:
 
 	t.set_type_variation("HeaderLabel", "Label")
 	t.set_font("font", "HeaderLabel", serif_font())
-	t.set_font_size("font_size", "HeaderLabel", 26)
+	t.set_font_size("font_size", "HeaderLabel", 28)
 	t.set_color("font_color", "HeaderLabel", GOLD_BRIGHT)
 
 	t.set_type_variation("SubtleLabel", "Label")
-	t.set_font_size("font_size", "SubtleLabel", 14)
+	t.set_font_size("font_size", "SubtleLabel", 16)
 	t.set_color("font_color", "SubtleLabel", MUTED)
 
 	t.set_stylebox("panel", "PanelContainer", panel_style())

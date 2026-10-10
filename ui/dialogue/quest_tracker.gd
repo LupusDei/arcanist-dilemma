@@ -5,9 +5,11 @@ extends Control
 
 const KIND_MARKS := {&"main": "◆ ", &"key": "★ ", &"side": ""}
 const MAX_QUESTS := 5
+const WIDTH := 430.0
 
 var manager: QuestManager
 
+var _panel: PanelContainer
 var _list: VBoxContainer
 var _refresh_queued := false
 
@@ -16,16 +18,25 @@ func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	theme = QuestUiStyle.get_theme()
+	# A soft dark backing keeps the text readable over bright sky and snow.
+	_panel = PanelContainer.new()
+	_panel.name = "Panel"
+	_panel.anchor_left = 1.0
+	_panel.anchor_right = 1.0
+	_panel.offset_left = -WIDTH - 24
+	_panel.offset_right = -24
+	_panel.offset_top = 24
+	_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var style := QuestUiStyle.panel_style(Color(0.04, 0.03, 0.06, 0.62), Color(QuestUiStyle.GOLD, 0.45), 1, 8)
+	style.shadow_size = 0
+	style.set_content_margin_all(16)
+	_panel.add_theme_stylebox_override("panel", style)
+	add_child(_panel)
 	_list = VBoxContainer.new()
 	_list.name = "List"
-	_list.anchor_left = 1.0
-	_list.anchor_right = 1.0
-	_list.offset_left = -360
-	_list.offset_right = -24
-	_list.offset_top = 24
-	_list.add_theme_constant_override("separation", 14)
+	_list.add_theme_constant_override("separation", 16)
 	_list.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(_list)
+	_panel.add_child(_list)
 
 
 func bind(p_manager: QuestManager) -> void:
@@ -45,6 +56,7 @@ func refresh() -> void:
 	if manager == null:
 		return
 	var shown := 0
+	_panel.visible = not manager.get_active_quests().is_empty()
 	for quest in manager.get_active_quests():
 		if shown >= MAX_QUESTS:
 			break
@@ -64,12 +76,13 @@ func get_lines() -> Array[String]:
 
 func _make_entry(entry: Dictionary) -> Control:
 	var box := VBoxContainer.new()
-	box.add_theme_constant_override("separation", 2)
+	box.add_theme_constant_override("separation", 4)
 	box.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var title := Label.new()
 	title.text = KIND_MARKS.get(entry["kind"], "") + entry["title"]
 	title.add_theme_font_override("font", QuestUiStyle.serif_font())
-	title.add_theme_font_size_override("font_size", 20)
+	title.add_theme_font_size_override("font_size", 27)
+	title.add_theme_constant_override("outline_size", 5)
 	title.add_theme_color_override("font_color", QuestUiStyle.GOLD_BRIGHT)
 	box.add_child(title)
 	for objective: Dictionary in entry["objectives"]:
@@ -81,9 +94,9 @@ func _make_entry(entry: Dictionary) -> Control:
 			text += " (optional)"
 		label.text = ("✓ " if objective["done"] else "• ") + text
 		label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		label.custom_minimum_size = Vector2(320, 0)
-		label.size_flags_horizontal = Control.SIZE_SHRINK_END
-		label.add_theme_font_size_override("font_size", 16)
+		label.custom_minimum_size = Vector2(WIDTH - 32, 0)
+		label.add_theme_font_size_override("font_size", 21)
+		label.add_theme_constant_override("outline_size", 4)
 		var color := QuestUiStyle.PARCHMENT
 		if objective["done"]:
 			color = QuestUiStyle.GOOD

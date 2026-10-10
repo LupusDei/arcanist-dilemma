@@ -37,19 +37,26 @@ func _ready() -> void:
 	add_child(dialogue_box)
 	dialogue_box.closed.connect(_on_dialogue_closed)
 
+	# Notices sit in a full-screen overlay so UiScale can size it with the rest.
+	var overlay := Control.new()
+	overlay.name = "Overlay"
+	overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
+	overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(overlay)
 	_notice = Label.new()
 	_notice.name = "Notice"
 	_notice.theme = QuestUiStyle.get_theme()
 	_notice.set_anchors_preset(Control.PRESET_CENTER_TOP)
-	_notice.offset_top = 90
-	_notice.offset_left = -400
-	_notice.offset_right = 400
+	_notice.offset_top = 110
+	_notice.offset_left = -500
+	_notice.offset_right = 500
 	_notice.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_notice.add_theme_font_override("font", QuestUiStyle.serif_font())
-	_notice.add_theme_font_size_override("font_size", 28)
-	_notice.add_theme_constant_override("outline_size", 6)
+	_notice.add_theme_font_size_override("font_size", 34)
+	_notice.add_theme_constant_override("outline_size", 10)
 	_notice.modulate.a = 0.0
-	add_child(_notice)
+	overlay.add_child(_notice)
+	UiScale.fit(self)
 
 	var found := QuestManager.find(get_tree())
 	if found:

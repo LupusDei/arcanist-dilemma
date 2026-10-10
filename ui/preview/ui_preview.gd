@@ -54,6 +54,7 @@ func _ready() -> void:
 	creation.confirmed.connect(func(c): game_ui.mock.character_name = c.name; game_ui.mock.stats_changed.emit(game_ui.mock.get_stats()); _show_tab(0))
 	creation.cancelled.connect(_show_tab.bind(0))
 	add_child(creation)
+	UiScale.fit(creation)
 
 	_build_dev_panel()
 

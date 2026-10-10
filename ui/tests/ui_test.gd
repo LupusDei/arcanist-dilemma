@@ -12,6 +12,7 @@ func _initialize() -> void:
 func _run() -> void:
 	_test_stats()
 	_test_orb_geometry()
+	_test_scale()
 	await _test_hud()
 	await _test_character_sheet()
 	await _test_talents()
@@ -42,6 +43,15 @@ func _test_stats() -> void:
 		total += v
 	_check(total == 5 and s.get(&"intelligence", 0) == 3, "suggested build spends every point (got %s)" % s)
 	_check(UiStats.attribute_tooltip(&"vitality", &"sorcerer").contains("strain capacity"), "tooltip shows the path bonus")
+
+
+func _test_scale() -> void:
+	var win := root
+	var before := win.content_scale_mode
+	_check(UiScale.factor(win) > 0.0, "UI scale factor is positive")
+	win.content_scale_mode = Window.CONTENT_SCALE_MODE_CANVAS_ITEMS
+	_check(UiScale.factor(win) == 1.0, "UI does not scale itself when the project stretch mode is on")
+	win.content_scale_mode = before
 
 
 func _test_orb_geometry() -> void:

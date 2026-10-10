@@ -21,6 +21,7 @@ func _init() -> void:
 
 
 func _ready() -> void:
+	UiScale.fit(self)
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	new_game_button.grab_focus.call_deferred()
 

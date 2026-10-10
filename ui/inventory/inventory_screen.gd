@@ -67,6 +67,11 @@ func _ready() -> void:
 	_build()
 	if items:
 		bind(items)
+	# Scale with the window like the rest of the UI.
+	if get_parent() is CanvasLayer:
+		UiScale.fit(get_parent())
+	else:
+		UiScale.fit(self)
 
 
 func bind(service: ItemsService) -> void:
