@@ -23,9 +23,9 @@ const AIM_TOLERANCE := 0.35
 @export var shake_when_hurt := true
 ## Aim at the mouse cursor instead of the screen centre (matches PlayerCombatInput).
 var aim_at_cursor := false
-## Returns the world point being aimed at; targets beyond it (behind a wall)
-## don't tint the reticle. Optional.
-var aim_provider: Callable
+## Returns the HealthComponent being aimed at (PlayerCombatInput's aim assist
+## target). Without one, the reticle tests the camera ray itself.
+var target_provider: Callable
 
 var reticle: SpellReticle
 var kick: CameraKick
@@ -79,15 +79,14 @@ func _on_spell_cast(spell: SpellData) -> void:
 
 ## The living, hostile-or-prop target the reticle is over, nearest first, or null.
 func target_under_reticle() -> HealthComponent:
+	if target_provider.is_valid():
+		return target_provider.call() as HealthComponent
 	var camera := get_viewport().get_camera_3d()
 	if camera == null or caster == null:
 		return null
 	var screen := get_viewport().get_mouse_position() if aim_at_cursor else get_viewport().get_visible_rect().size * 0.5
 	var from := camera.project_ray_origin(screen)
 	var dir := camera.project_ray_normal(screen)
-	var limit := INF
-	if aim_provider.is_valid():
-		limit = (aim_provider.call() as Vector3 - from).dot(dir) + 1.0
 	var own_team := caster.health.team if caster.health else &"player"
 	var best: HealthComponent = null
 	var best_depth := INF
@@ -97,7 +96,7 @@ func target_under_reticle() -> HealthComponent:
 			continue
 		var to := target.get_target_position() - from
 		var depth := to.dot(dir)
-		if depth <= 0.0 or depth > limit or depth >= best_depth:
+		if depth <= 0.0 or depth >= best_depth:
 			continue
 		if (to - dir * depth).length() <= target.hit_radius + AIM_TOLERANCE:
 			best = target
