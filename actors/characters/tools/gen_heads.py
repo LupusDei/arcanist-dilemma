@@ -16,8 +16,8 @@ BASE_R = 0.155
 FACES = {
     "round": dict(w=1.0, jaw=1.0, length=0.95, cheek=1.18, chin=1.0, square=0.0),
     "oval": dict(w=0.93, jaw=0.88, length=1.06, cheek=0.92, chin=0.95, square=0.0),
-    "heart": dict(w=0.99, jaw=0.76, length=1.0, cheek=1.0, chin=0.72, square=0.0),
-    "square": dict(w=1.0, jaw=1.1, length=1.0, cheek=0.88, chin=1.25, square=1.0),
+    "heart": dict(w=0.99, jaw=0.8, length=1.0, cheek=1.0, chin=0.85, square=0.0),
+    "square": dict(w=1.0, jaw=1.02, length=1.0, cheek=0.88, chin=1.12, square=0.8),
 }
 
 # Cranium: the skull ellipsoid that the hair is groomed on (in units of r, before width).
@@ -35,30 +35,90 @@ class HeadParams:
         girl = body == "girl"
         child = age <= 0
         if girl:
+            # Softer and narrower through the jaw, a small rounded chin, fuller cheeks.
             f["w"] *= 0.97
-            f["jaw"] *= 0.9
-            f["chin"] *= 0.82
-            f["square"] *= 0.45
-        if child:
-            f["length"] *= 0.9
-            f["cheek"] *= 1.12
             f["jaw"] *= 0.92
-            f["chin"] *= 0.85
+            f["chin"] *= 0.88
+            f["square"] *= 0.35
+            f["cheek"] *= 1.04
+        else:
+            # Boys: a longer face, a wider angled jaw and a broad blunt chin.
+            f["jaw"] *= 1.06
+            f["chin"] *= 1.08
+            f["cheek"] *= 0.9
+        if child:
+            f["length"] *= 0.92
+            f["cheek"] *= 1.1
+            f["jaw"] *= 0.94
+            f["chin"] *= 0.9
         self.f = f
         self.girl = girl
         self.child = child
-        # Big eyes, the concept art's signature.
-        self.eye_r = r * 0.2 * (1.12 if child else 1.0) * (1.05 if girl else 1.0)
-        ex = r * 0.37 * f["w"]
-        ey = -r * 0.03
-        ez = -r * 0.69
+        # Big eyes, the concept art's signature, a touch bigger on girls and children.
+        self.eye_r = r * 0.185 * (1.1 if child else 1.0) * (1.06 if girl else 1.0)
+        ex = r * 0.36 * f["w"]
+        ey = -r * 0.04
+        ez = -r * 0.65
         self.eyes = [np.array([-ex, ey, ez]), np.array([ex, ey, ez])]
-        self.nose = (0.82 if girl else 1.0) * (0.75 if child else 1.0)
+        self.nose = (0.85 if girl else 1.12) * (0.8 if child else 1.0)
         self.mouth_y = -0.5 * r * f["length"] * (0.95 if child else 1.0)
-        self.brow = 0.75 if girl else 1.0
+        self.brow = 0.8 if girl else 1.25
+        self.loft = Loft(self)
 
     def cranium(self):
         return CRANIUM_C * self.r, CRANIUM_R * self.r * np.array([self.f["w"], 1.0, 1.0])
+
+
+# The face is lofted: at each height below the brow its cross-section is a rounded
+# rectangle (superellipse) with these half-widths and front and back depths, in r.
+# Heights run from the forehead (0.32) down to the bottom of the chin (-1.0).
+LOFT_Y = np.array([0.32, -0.05, -0.25, -0.45, -0.6, -0.7, -0.8, -0.9, -0.96])
+LOFT_W = np.array([0.66, 0.8, 0.76, 0.67, 0.62, 0.56, 0.45, 0.33, 0.29])
+LOFT_FRONT = np.array([0.84, 0.8, 0.84, 0.82, 0.78, 0.78, 0.77, 0.73, 0.64])
+LOFT_BACK = np.array([0.5, 0.6, 0.5, 0.36, 0.24, 0.1, -0.06, -0.2, -0.3])
+# Which rows the face presets act on: 0 upper face, 1 jaw, 2 chin.
+LOFT_PART = np.array([0, 0, 0, 1, 1, 1, 2, 2, 2])
+
+
+def _profile(xs, ys):
+    from scipy.interpolate import PchipInterpolator
+    return PchipInterpolator(xs[::-1], ys[::-1], extrapolate=True)
+
+
+class Loft:
+    def __init__(self, P):
+        f = P.f
+        L = f["length"]
+        # The jaw and chin presets fade in down the face, so the outline stays smooth.
+        jw = np.array([0, 0, 0.1, 0.45, 0.75, 1.0, 1.0, 1.0, 1.0])
+        cw = np.array([0, 0, 0, 0, 0, 0.2, 0.6, 1.0, 1.0])
+        # A square jaw keeps its width lower down; a pointed one narrows sooner.
+        sq = np.array([0, 0, 0, 0.0, 0.02, 0.04, 0.06, 0.05, 0.04]) * (f["square"] - 0.3)
+        w = LOFT_W * f["w"] * (1 + (f["jaw"] - 1) * jw) * (1 + (f["chin"] - 1) * cw) + sq
+        front = LOFT_FRONT + (f["chin"] - 1.0) * 0.15 * cw
+        self.y = LOFT_Y * L
+        self.top = self.y[0]
+        self.bottom = self.y[-1]
+        ym = self.y * P.r
+        self.w = _profile(ym, w * P.r)
+        self.zf = _profile(ym, -front * P.r)
+        self.zb = _profile(ym, LOFT_BACK * P.r)
+        self.n = 2.0 + 0.35 * f["square"]
+        self.r = P.r
+
+    def sdf(self, p):
+        r = self.r
+        y = np.clip(p[:, 1], self.bottom * r, self.top * r)
+        W = self.w(y)
+        zf = self.zf(y)
+        zb = self.zb(y)
+        zc = (zf + zb) * 0.5
+        D = (zb - zf) * 0.5
+        n = self.n
+        q = (np.abs(p[:, 0]) / W) ** n + (np.abs(p[:, 2] - zc) / D) ** n
+        d = (q ** (1.0 / n) - 1.0) * np.minimum(W, D)
+        # Round off the bottom of the chin and jaw.
+        return sdf.smax(sdf.smax(d, self.bottom * r - p[:, 1], 0.1 * r), p[:, 1] - self.top * r, 0.2 * r)
 
 
 def head_sdf(P, p, with_lids=True):
@@ -68,59 +128,64 @@ def head_sdf(P, p, with_lids=True):
     L = f["length"]
     cc, cr = P.cranium()
     d = sdf.ellipsoid(p, cc, cr)
-    # The face: a broad mask, cheeks, a jaw line down to the chin.
-    face = sdf.ellipsoid(p, (0, -0.3 * r * L, -0.3 * r), (0.74 * r * w * f["jaw"], 0.68 * r * L, 0.66 * r))
-    d = sdf.smin(d, face, 0.16 * r)
-    jx = 0.6 * r * w * f["jaw"]
-    cx = 0.17 * r * f["chin"]
-    jaw_r = (0.15 + 0.05 * f["square"]) * r
+    d = sdf.smin(d, P.loft.sdf(p), 0.16 * r)
     for sx in (-1, 1):
-        d = sdf.smin(d, sdf.capsule(p, (sx * jx, -0.4 * r * L, 0.1 * r), (sx * cx, -0.86 * r * L, -0.52 * r), jaw_r, 0.12 * r), 0.14 * r)
-        d = sdf.smin(d, sdf.sphere(p, (sx * 0.43 * r * w, -0.24 * r, -0.5 * r), 0.27 * r * f["cheek"]), 0.16 * r)
-        # Cheekbones.
-        d = sdf.smin(d, sdf.ellipsoid(p, (sx * 0.5 * r * w, -0.06 * r, -0.52 * r), (0.2 * r, 0.11 * r, 0.18 * r)), 0.1 * r)
-    d = sdf.smin(d, sdf.sphere(p, (0, -0.9 * r * L, -0.55 * r), 0.15 * r * f["chin"]), 0.12 * r)
-    if f["square"] > 0:
-        for sx in (-1, 1):
-            d = sdf.smin(d, sdf.sphere(p, (sx * 0.52 * r * w, -0.58 * r * L, -0.1 * r), 0.2 * r * f["square"]), 0.12 * r)
-    # Brow ridge over the eyes.
-    by = P.eyes[0][1] + 0.3 * r
-    br = 0.075 * r * (0.85 if P.girl else 1.0)
+        # Cheeks (full on round faces and children) and cheekbones.
+        full = max(f["cheek"] - 0.85, 0.0)
+        if full > 0:
+            d = sdf.smin(d, sdf.sphere(p, (sx * 0.4 * r * w, -0.3 * r, -0.5 * r), 0.24 * r * (0.8 + full)), 0.16 * r)
+        d = sdf.smin(d, sdf.ellipsoid(p, (sx * 0.48 * r * w, -0.08 * r, -0.56 * r), (0.18 * r, 0.09 * r, 0.13 * r)), 0.1 * r)
+    # Brow ridge over the eyes: heavier and lower on boys.
+    by = P.eyes[0][1] + (0.27 if not P.girl else 0.3) * r
+    br = 0.075 * r * (0.85 if P.girl else 1.2)
     for sx in (-1, 1):
-        d = sdf.smin(d, sdf.capsule(p, (sx * 0.62 * r * w, by - 0.02 * r, -0.66 * r), (sx * 0.08 * r, by, -0.84 * r), br * 0.7, br), 0.1 * r)
+        d = sdf.smin(d, sdf.capsule(p, (sx * 0.48 * r * w, by - 0.03 * r, -0.74 * r), (sx * 0.1 * r, by, -0.84 * r), br * 0.5, br * 0.9), 0.14 * r)
     # Eye sockets, so the eyeballs sit in the face.
     for c in P.eyes:
         d = sdf.ssub(d, sdf.sphere(p, c, P.eye_r + 0.012 * r), 0.05 * r)
-    # Nose: bridge, a rounded tip, wings and nostrils.
+    # Nose: bridge, a rounded tip, wings and nostrils, set on the face's front.
     n = P.nose
-    tip = np.array([0, -0.21 * r, -0.98 * r - 0.05 * r * n])
-    d = sdf.smin(d, sdf.capsule(p, (0, 0.06 * r, -0.86 * r), tip + np.array([0, 0.02 * r, 0.02 * r]), 0.045 * r * n, 0.06 * r * n), 0.06 * r)
+    zn = float(P.loft.zf(-0.26 * r))
+    tip = np.array([0, -0.22 * r, zn - 0.13 * r - 0.04 * r * n])
+    d = sdf.smin(d, sdf.capsule(p, (0, 0.06 * r, zn - 0.02 * r), tip + np.array([0, 0.03 * r, 0.03 * r]), 0.05 * r * n, 0.062 * r * n), 0.06 * r)
     d = sdf.smin(d, sdf.sphere(p, tip, 0.075 * r * n), 0.05 * r)
     for sx in (-1, 1):
-        d = sdf.smin(d, sdf.sphere(p, (sx * 0.075 * r * n, -0.25 * r, -0.92 * r - 0.02 * r * n), 0.055 * r * n), 0.04 * r)
-        d = sdf.ssub(d, sdf.sphere(p, (sx * 0.04 * r * n, -0.29 * r, -0.97 * r - 0.03 * r * n), 0.022 * r * n), 0.012 * r)
+        d = sdf.smin(d, sdf.sphere(p, (sx * 0.08 * r * n, -0.26 * r, zn - 0.05 * r), 0.052 * r * n), 0.05 * r)
+        d = sdf.ssub(d, sdf.ellipsoid(p, (sx * 0.04 * r * n, -0.305 * r, zn - 0.1 * r), (0.022 * r * n, 0.012 * r * n, 0.02 * r * n)), 0.01 * r)
     # Lips, the line of the mouth curving up at the corners, and the groove under the lower lip.
     my = P.mouth_y
-    lip = 1.15 if P.girl else 1.0
+    zm = float(P.loft.zf(my))
+    lip = 1.05 if P.girl else 0.85
     mw = 0.17 * r * (0.92 if P.girl else 1.0)
-    d = sdf.smin(d, sdf.ellipsoid(p, (0, my + 0.04 * r, -0.92 * r), (mw, 0.045 * r * lip, 0.065 * r)), 0.04 * r)
-    d = sdf.smin(d, sdf.ellipsoid(p, (0, my - 0.045 * r, -0.9 * r), (mw * 0.85, 0.052 * r * lip, 0.065 * r)), 0.04 * r)
-    d = sdf.ssub(d, sdf.ellipsoid(p, (0, my, -1.0 * r), (mw * 1.02, 0.009 * r, 0.11 * r)), 0.008 * r)
+    d = sdf.smin(d, sdf.ellipsoid(p, (0, my + 0.035 * r, zm + 0.01 * r), (mw, 0.045 * r * lip, 0.04 * r)), 0.05 * r)
+    d = sdf.smin(d, sdf.ellipsoid(p, (0, my - 0.045 * r, zm + 0.015 * r), (mw * 0.85, 0.052 * r * lip, 0.04 * r)), 0.05 * r)
+    # The mouth line: flat in the middle, turning up at the corners into a slight smile.
+    for x0, x1, y0, y1 in ((-0.55, 0.55, 0.0, 0.0), (0.55, 1.02, 0.0, 0.022), (-0.55, -1.02, 0.0, 0.022)):
+        d = sdf.ssub(d, sdf.capsule(p, (x0 * mw, my + y0 * r, zm - 0.03 * r), (x1 * mw, my + y1 * r, zm - 0.03 * r), 0.009 * r), 0.008 * r)
     for sx in (-1, 1):
-        d = sdf.ssub(d, sdf.sphere(p, (sx * mw * 1.0, my + 0.028 * r, -0.9 * r), 0.022 * r), 0.012 * r)
-    d = sdf.ssub(d, sdf.capsule(p, (-0.09 * r, my - 0.13 * r, -0.97 * r), (0.09 * r, my - 0.13 * r, -0.97 * r), 0.025 * r), 0.04 * r)
-    # Ears.
+        d = sdf.ssub(d, sdf.sphere(p, (sx * mw * 1.02, my + 0.024 * r, zm + 0.0 * r), 0.011 * r), 0.01 * r)
+    d = sdf.ssub(d, sdf.capsule(p, (-0.09 * r, my - 0.13 * r, zm - 0.04 * r), (0.09 * r, my - 0.13 * r, zm - 0.04 * r), 0.022 * r), 0.04 * r)
+    # Ears: the concept art's are big and stand out from the head.
+    es = 1.0 if P.girl else 1.15
     for sx in (-1, 1):
-        ear_c = np.array([sx * 0.86 * r * w, -0.1 * r, 0.1 * r])
-        ear = sdf.ellipsoid(p, ear_c, (0.08 * r, 0.24 * r, 0.16 * r))
-        ear = sdf.ssub(ear, sdf.ellipsoid(p, ear_c + np.array([sx * 0.065 * r, 0.01 * r, -0.02 * r]), (0.05 * r, 0.16 * r, 0.1 * r)), 0.02 * r)
+        ear_c = np.array([sx * 0.88 * r * w, -0.1 * r, 0.08 * r])
+        tilt = np.array([sx * 0.06 * r, 0, 0])
+        ear = sdf.ellipsoid(p, ear_c + tilt * 0.5, (0.08 * r, 0.24 * r * es, 0.16 * r * es))
+        ear = sdf.ssub(ear, sdf.ellipsoid(p, ear_c + tilt + np.array([sx * 0.04 * r, 0.01 * r, -0.03 * r]), (0.05 * r, 0.16 * r * es, 0.1 * r * es)), 0.02 * r)
         d = sdf.smin(d, ear, 0.05 * r)
-    # Neck down into the collar.
-    nr = 0.3 * r * (0.88 if P.girl else 1.0)
+    # Neck down into the collar: a boy's is thicker.
+    nr = 0.3 * r * (0.88 if P.girl else 1.12)
     d = sdf.smin(d, sdf.capsule(p, (0, -0.45 * r, 0.12 * r), (0, -1.7 * r, 0.2 * r), nr, nr * 1.15), 0.14 * r)
     if with_lids:
         d = sdf.smin(d, lids_sdf(P, p), 0.015 * r)
     return d
+
+
+def upper_lid(u):
+    """Height of the upper lid's edge (in eye radii) across the eye, u = -1 inner to 1 outer:
+    an open arch just over the iris, highest a little past the middle, lower at the corners."""
+    u = np.clip(u, -1.2, 1.2)
+    return 0.72 - 0.32 * (u - 0.1) ** 2
 
 
 def lids_sdf(P, p):
@@ -132,10 +197,9 @@ def lids_sdf(P, p):
         shell = sdf.sphere(p, c, P.eye_r + 0.03 * r)
         q = p - c
         e = P.eye_r
-        # The upper lid rests on the top of the iris and drops a little toward the outer corner.
-        up_y = 0.52 * e - 0.1 * np.clip(sx * q[:, 0] / e, -1, 1) * e
+        up_y = upper_lid(q[:, 0] * sx / e) * e
         upper = sdf.smax(shell, up_y - q[:, 1], 0.01 * r)
-        lower = sdf.smax(shell, q[:, 1] + 0.72 * e, 0.01 * r)
+        lower = sdf.smax(shell, q[:, 1] + 0.66 * e, 0.01 * r)
         front = q[:, 2] + 0.05 * e
         out = np.minimum(out, sdf.smax(np.minimum(upper, lower), front, 0.01 * r))
     return out
@@ -222,15 +286,17 @@ def brows_mesh(P):
     chains = []
     for c in P.eyes:
         sx = np.sign(c[0])
+        # Girls get a higher arch; boys a lower, straighter, heavier brow.
+        hy = [1.42, 1.68, 1.72, 1.5] if P.girl else [1.42, 1.58, 1.6, 1.44]
         pts = [
-            (c[0] - sx * 0.9 * e, c[1] + 1.4 * e),
-            (c[0] - sx * 0.3 * e, c[1] + 1.66 * e),
-            (c[0] + sx * 0.4 * e, c[1] + 1.7 * e),
-            (c[0] + sx * 1.05 * e, c[1] + 1.48 * e),
+            (c[0] - sx * 0.9 * e, c[1] + hy[0] * e),
+            (c[0] - sx * 0.3 * e, c[1] + hy[1] * e),
+            (c[0] + sx * 0.4 * e, c[1] + hy[2] * e),
+            (c[0] + sx * 1.05 * e, c[1] + hy[3] * e),
         ]
-        chains.append(project_to_skin(P, [(x, y, 0) for x, y in pts], 0.0))
+        chains.append(project_to_skin(P, [(x, y, 0) for x, y in pts], 0.003 * P.r))
     th = 0.036 * r * P.brow
-    radii = [th * 1.05, th, th * 0.8, th * 0.35]
+    radii = [th * 1.05, th, th * 0.8, th * 0.45]
 
     def fn(q):
         d = np.full(len(q), 1e3)
@@ -270,9 +336,9 @@ def lashes_mesh(P):
             sx = np.sign(c[0])
             qq = q - c
             # A dark line along the upper lid's edge, thicker toward the outer corner.
-            edge = 0.52 * e - 0.1 * np.clip(sx * qq[:, 0] / e, -1, 1) * e
+            edge = upper_lid(sx * qq[:, 0] / e) * e
             outer = np.clip(sx * qq[:, 0] / e, 0, 1)
-            thick = 0.012 * r * (1.0 + 1.2 * outer) * (1.3 if P.girl else 1.0)
+            thick = 0.01 * r * (1.0 + 1.0 * outer) * (1.35 if P.girl else 0.9)
             shell = np.abs(sdf.length(qq) - (e + 0.03 * r)) - thick
             band = sdf.smax(shell, np.abs(qq[:, 1] - edge) - thick * 1.1, 0.003 * r)
             band = sdf.smax(band, qq[:, 2] + 0.2 * e, 0.003 * r)
@@ -281,7 +347,7 @@ def lashes_mesh(P):
                 # Three lashes flicking out at the outer corner.
                 for k in range(3):
                     a = 0.25 + k * 0.32
-                    base = c + np.array([sx * np.cos(a) * e * 0.98, np.sin(a) * e * 0.62 + 0.0 * e, -0.55 * e])
+                    base = c + np.array([sx * np.cos(a) * e * 0.98, upper_lid(np.cos(a)) * e, -0.55 * e])
                     tip = base + np.array([sx * (0.09 - 0.02 * k) * r, (0.035 + 0.02 * k) * r, 0.0])
                     d = np.minimum(d, sdf.capsule(q, base, tip, 0.016 * r, 0.004 * r))
         return d

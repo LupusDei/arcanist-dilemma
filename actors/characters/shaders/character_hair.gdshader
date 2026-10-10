@@ -1,5 +1,4 @@
 shader_type spatial;
-render_mode diffuse_toon, specular_toon;
 // Hair, brows and beards. UV.x runs along each lock (0 root, 1 tip) and UV.y
 // is a random number per lock: roots are darker, tips catch the light, and
 // neighbouring locks differ a little in tone. A sheen band follows the light.
@@ -9,6 +8,11 @@ uniform float root_shade = 0.35;
 uniform float sheen = 0.25;
 uniform float stubble = 0.0;
 uniform float flash = 0.0;
+uniform float light_wrap = 0.3;
+uniform vec4 scatter = vec4(1.0, 0.6, 0.4, 0.15);
+uniform float gloss = 0.55;
+
+#include "res://actors/characters/shaders/character_light.gdshaderinc"
 
 varying vec3 local_pos;
 
@@ -37,6 +41,4 @@ void fragment() {
 	EMISSION = mix(c, vec3(1.0), 0.3) * band * sheen + vec3(1.0, 0.35, 0.3) * flash;
 	ROUGHNESS = 0.6;
 	SPECULAR = 0.25;
-	RIM = 0.25;
-	RIM_TINT = 0.6;
 }

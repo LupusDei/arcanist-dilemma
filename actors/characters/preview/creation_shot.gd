@@ -23,6 +23,7 @@ func _init() -> void:
 	creation.set_character_name(c["name"])
 	var zoom := float(args[2]) if args.size() > 2 else 0.25
 	var yaw := float(args[3]) if args.size() > 3 else -0.35
+	creation.portrait.sway = false
 	creation.portrait.set_zoom(zoom, yaw)
 
 

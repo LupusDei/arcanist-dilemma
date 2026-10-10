@@ -1,14 +1,18 @@
 shader_type spatial;
-render_mode diffuse_toon, specular_toon;
 // Painted cartoon eyes. UV.x is the angle from straight ahead (0 to 1 = 0 to pi)
 // and UV.y the angle around it, so the iris, pupil and catchlights are drawn
 // in a disc facing forward on the eyeball.
 
 uniform vec4 iris_color : source_color = vec4(0.38, 0.23, 0.12, 1.0);
 uniform vec4 sclera_color : source_color = vec4(0.97, 0.95, 0.92, 1.0);
-uniform float iris_size = 0.42;
-uniform float pupil_size = 0.19;
+uniform float iris_size = 0.56;
+uniform float pupil_size = 0.22;
 uniform float flash = 0.0;
+uniform float light_wrap = 0.2;
+uniform vec4 scatter = vec4(1.0, 1.0, 1.0, 0.0);
+uniform float gloss = 0.9;
+
+#include "res://actors/characters/shaders/character_light.gdshaderinc"
 
 void fragment() {
 	float th = UV.x * PI;
@@ -17,7 +21,7 @@ void fragment() {
 	float rho = th;
 	vec3 color = sclera_color.rgb;
 	// Shadow of the upper lid across the top of the eye.
-	color *= mix(1.0, 0.72, smoothstep(0.1, 0.75, p.y));
+	color *= mix(1.0, 0.78, smoothstep(0.25, 0.85, p.y));
 	float iris = smoothstep(iris_size + 0.015, iris_size - 0.015, rho);
 	vec3 ic = iris_color.rgb;
 	// Darker rim, lighter toward the bottom like light pooling in the iris.
