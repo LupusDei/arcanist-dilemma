@@ -50,6 +50,9 @@ func _ready() -> void:
 	_health = _player.get_node(^"HealthComponent") as HealthComponent
 	_progression = get_node_or_null(^"/root/Progression")
 
+	# Damage numbers, XP popups, the crosshair and sounds (systems/feedback).
+	add_child(GameFeedback.new())
+
 	_path_choice = PathChoice.new()
 	_path_choice.path_picked.connect(_on_path_picked)
 	add_child(_path_choice)

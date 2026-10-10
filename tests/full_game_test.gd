@@ -39,21 +39,28 @@ func _run() -> void:
 	var gear: Array = items.equipment.slots.values().filter(func(i: Variant) -> bool: return i != null)
 	_check(gear.size() >= 2, "the arcanist starts with gear (%d pieces)" % gear.size())
 
-	# --- Chores: cast Nudge and Spark in the kitchen, then show Tam ---
+	# --- Chores: Nudge the spoon off the table and Spark the stove, then Tam ---
 	var kitchen: QuestArea = story.get_node("Area_kitchen")
 	player.global_position = kitchen.global_position + Vector3(0, 0.5, 0)
 	await _frames(20)
 	var caster: SpellCaster = player.get_node("SpellCaster")
 	_check(quests.is_player_in(&"kitchen"), "walking into the yard counts as the kitchen")
-	for id in [&"nudge", &"spark"]:
+	var tutorial: OpeningTutorial = story.get_node("OpeningTutorial")
+	for chore: ChoreTarget in [tutorial.spoon, tutorial.stove]:
+		var aim := chore.health.get_target_position()
+		var away := player.global_position - aim
+		away.y = 0.0
+		player.global_position = aim + away.normalized() * 2.5
+		await _frames(5)
 		for spell in caster.get_action_bar() + [caster.get_cantrip()]:
-			if spell != null and spell.id == id:
-				caster.cast(spell, player.global_position + Vector3(0, 1, -3))
+			if spell != null and spell.id == chore.spell_id:
+				caster.cast(spell, aim)
 				await _frames(50)
 				break
 	var chores := quests.get_progress(&"prologue")
-	_check(chores.is_objective_done(&"spoon"), "Nudge in the kitchen moves the spoon")
-	_check(chores.is_objective_done(&"stove"), "Spark in the kitchen lights the stove")
+	_check(tutorial.spoon.is_done, "Nudge sends the spoon flying")
+	_check(tutorial.stove.is_done, "Spark lights the stove")
+	_check(chores.stage == &"show_tam", "the chores are done")
 	_check(quests.has_dialogue_for(&"tam"), "Tam has something to say")
 
 	# --- Combat and loot ---

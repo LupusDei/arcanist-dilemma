@@ -15,11 +15,27 @@
 					"id": "chores",
 					"description": "Ma left a list of chores. Magic makes them quicker. Mostly.",
 					"objectives": [
-						{"id": "spoon", "type": "cast", "target": "nudge", "where": "kitchen", "description": "Nudge the spoon across the kitchen table"},
-						{"id": "stove", "type": "cast", "target": "spark", "where": "kitchen", "description": "Light the stove with a finger spark"},
-						{"id": "tam", "type": "talk", "target": "tam", "description": "Show Tam what you can do"}
+						{"id": "spoon", "type": "event", "target": "spoon_moved", "description": "Nudge the spoon off the kitchen table"},
+						{"id": "stove", "type": "event", "target": "stove_lit", "description": "Light the stove with a finger spark"}
 					],
 					"on_complete": [{"xp": 40}],
+					"next": "show_tam"
+				},
+				{
+					"id": "show_tam",
+					"description": "Tam saw the whole thing and is hopping from foot to foot.",
+					"objectives": [
+						{"id": "tam", "type": "talk", "target": "tam", "description": "Show Tam what you can do"}
+					],
+					"next": "jar"
+				},
+				{
+					"id": "jar",
+					"description": "Tam wants to see the jar on the fence post jump.",
+					"objectives": [
+						{"id": "jar", "type": "event", "target": "jar_jolted", "description": "Jolt the jar on the fence post"}
+					],
+					"on_complete": [{"xp": 30}, {"dialogue": "tam_promise"}],
 					"next": "bully"
 				},
 				{
@@ -28,6 +44,7 @@
 					"objectives": [
 						{"id": "rook", "type": "talk", "target": "rook", "description": "Deal with Rook at the well"}
 					],
+					"on_complete": [{"xp": 30}],
 					"next": "wolves_start"
 				},
 				{
@@ -44,7 +61,7 @@
 					"objectives": [
 						{"id": "hounds", "type": "kill", "target": "gloom_hound", "count": 3, "description": "Drive the wolves out of the barley"}
 					],
-					"on_complete": [{"set": "barley_wolves_cleared"}],
+					"on_complete": [{"set": "barley_wolves_cleared"}, {"xp": 80}],
 					"next": "wolves_report"
 				},
 				{
@@ -120,11 +137,27 @@
 			"id": "tam_chores",
 			"npc": "tam",
 			"priority": 10,
-			"conditions": [{"quest": "prologue", "stage": "chores"}],
+			"conditions": [{"quest": "prologue", "stage": "show_tam"}],
 			"lines": [
-				{"text": "Do it again! Do the spoon thing! Ma says it's the devil's work but Ma also says that about turnips."},
-				{"speaker": "player", "text": "Watch the jar.", "effects": [{"set": "tam_impressed"}]},
-				{"speaker": "narrator", "text": "A spark jumps from your fingertip and the jar lid rattles. Tam claps like it's the King's own fireworks."},
+				{"text": "The spoon went FLYING. And the stove! Ma says it's the devil's work but Ma also says that about turnips."},
+				{"text": "Do the jar! The one on the fence post. Make it JUMP."},
+				{"speaker": "player", "text": "Stand back.", "effects": [{"set": "tam_impressed"}]}
+			]
+		},
+		{
+			"id": "tam_jar_wait",
+			"npc": "tam",
+			"priority": 0,
+			"conditions": [{"quest": "prologue", "stage": "jar"}],
+			"lines": [
+				{"text": "The jar! On the post! Aim at it and do the zappy one!"}
+			]
+		},
+		{
+			"id": "tam_promise",
+			"speaker": "tam",
+			"lines": [
+				{"speaker": "narrator", "text": "The jar leaps off the post in a crackle of blue light and lands in the grass, smoking. Tam claps like it's the King's own fireworks."},
 				{"text": "One day you'll be a real wizard. Or a mage. Or whatever the other one is. And I'll be your apprentice."},
 				{"id": "end", "choices": [
 					{"text": "You'll be the first to know.", "hint": "-", "effects": [{"add": {"tam_bond": 1}}]},
