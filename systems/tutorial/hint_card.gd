@@ -120,6 +120,14 @@ func dismiss() -> void:
 	hint_id = &""
 
 
+## Hides the card at once (a conversation is opening over it).
+func hide_now() -> void:
+	if _tween:
+		_tween.kill()
+	highlight = null
+	_clear()
+
+
 func _clear() -> void:
 	panel.visible = false
 	panel.scale = Vector2.ONE

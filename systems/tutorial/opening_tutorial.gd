@@ -106,12 +106,14 @@ func is_new_game() -> bool:
 func _process(delta: float) -> void:
 	if _quests == null or _player == null:
 		return
+	var talking := _quests.is_in_dialogue() or get_tree().paused
 	if card.is_showing() and _is_finished(card.hint_id):
 		_finish(card.hint_id)
-		return
-	if _quests.is_in_dialogue() or get_tree().paused:
-		if card.is_showing():
-			card.dismiss()
+		if not talking:
+			return
+	if talking:
+		if card.panel.visible:
+			card.hide_now()
 		return
 	if _choice_timer > 0.0:
 		_choice_timer -= delta

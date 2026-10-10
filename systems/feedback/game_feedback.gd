@@ -518,8 +518,8 @@ func _build_toasts() -> void:
 	toasts.alignment = BoxContainer.ALIGNMENT_BEGIN
 	toasts.add_theme_constant_override("separation", 8)
 	toasts.set_anchors_preset(Control.PRESET_CENTER_TOP)
-	toasts.anchor_top = 0.22
-	toasts.anchor_bottom = 0.22
+	toasts.anchor_top = 0.3
+	toasts.anchor_bottom = 0.3
 	toasts.offset_left = -500
 	toasts.offset_right = 500
 	root.add_child(toasts)
