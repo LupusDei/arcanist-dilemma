@@ -6,8 +6,8 @@ extends CanvasLayer
 ##   use magic on, and flicks out when a spell lands
 ## - damage numbers over enemies (bigger and gold on a crit), status words
 ##   ("Stunned!"), red numbers and a camera kick when the player is hurt
-## - "+N XP" where a monster fell, a short hit-stop on each kill, a burst of
-##   light on level-up, item and gold pickups
+## - "+N XP" where a monster fell, a short hit-stop on each kill, a pillar of
+##   light on level-up (the HUD shows the banner), item and gold pickups
 ## - a toast with a chime for every finished quest objective
 ## - why a cast failed ("Not enough mana", "Recharging")
 ## - a synthesized sound for each of these (FeedbackSfx)
@@ -288,7 +288,6 @@ func _on_leveled_up(level: int) -> void:
 	if _player == null:
 		return
 	var at := _player.global_position
-	popup(at + Vector3(0, 3.2, 0), "Level %d!" % level, GOLD, 2.2, 3.0)
 	_spawn_ring(at + Vector3(0, 0.1, 0), GOLD, 4.0, 0.9)
 	_spawn_pillar(at)
 	shake(0.3)
@@ -431,7 +430,7 @@ func popup(at: Vector3, text: String, color: Color, size_scale := 1.0, seconds :
 	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	label.no_depth_test = true
 	label.fixed_size = true
-	label.pixel_size = 0.00055 * size_scale
+	label.pixel_size = 0.0008 * size_scale
 	label.render_priority = 10
 	label.outline_render_priority = 9
 	parent.add_child(label)

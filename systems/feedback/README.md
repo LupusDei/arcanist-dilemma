@@ -6,7 +6,7 @@
 - **Damage numbers** over enemies, tinted by the spell, bigger with a "!" on a crit. Status words ("Stunned!", "Burning").
 - **Getting hurt**: a red number over the player, a camera kick and a thump.
 - **Kills**: a short hit-stop, a ring of light, and "+N XP" where the monster fell.
-- **Level-up**: a pillar of light, a ring, a fanfare and "Level N!".
+- **Level-up**: a pillar of light, a ring, and a fanfare, under the HUD's level-up banner.
 - **Pickups**: the item's name in its rarity color, "+N gold".
 - **Quest objectives**: a toast with a check and a chime when one is done, and the count for kills.
 - **Failed casts**: "Not enough mana", "Jolt is recharging".

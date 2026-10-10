@@ -151,7 +151,6 @@ func _run() -> void:
 	_check(_feedback.popups_shown.any(func(t: String) -> bool: return t.begins_with("+") and t.ends_with(" XP") and t != "+40 XP"), "kills show XP")
 	_check(_quests.get_quest_stage(&"prologue") == &"wolves_report", "-> report to Hollis")
 	_check(progression.progression.level == 2, "the first fight ends in level 2 (xp %d, level %d)" % [progression.progression.xp, progression.progression.level])
-	_check(_feedback.popups_shown.has("Level 2!"), "a level-up burst shows")
 	if not _tutorial.shown.has(&"loot") and _tutorial._hound_loot:
 		print("     (loot dropped; the loot lesson waits for the fight to end)")
 
