@@ -17,6 +17,7 @@ func _run() -> void:
 	await _test_effects_clean_up()
 	await _test_feedback()
 	await _test_props_and_aim()
+	await _test_aim_assist()
 	_test_sounds()
 	await _test_hitstop()
 
@@ -226,6 +227,57 @@ func _test_props_and_aim() -> void:
 	var trauma_before := feedback.kick.trauma
 	caster.health.take_damage(Hit.new(30.0, DamageType.Kind.PHYSICAL, null))
 	_check(feedback.kick.trauma > trauma_before + 0.15, "getting hurt kicks the camera (%.2f)" % feedback.kick.trauma)
+	await _clear_world()
+
+
+func _test_aim_assist() -> void:
+	print("-- crosshair and aim assist")
+	_new_world()
+	var caster := _make_caster()
+	var camera := Camera3D.new()
+	_world.add_child(camera)
+	camera.position = Vector3(0, 1.5, 0)
+	camera.current = true
+	var input := PlayerCombatInput.new()
+	input.caster = caster
+	caster.get_parent().add_child(input)
+	await process_frame
+	var reticle := input.combat_feedback.reticle
+	reticle.force_visible = true
+	await process_frame
+	var screen := root.get_visible_rect().size
+	_check(reticle.size.is_equal_approx(screen), "the crosshair covers the screen, so it draws at the centre (%s)" % reticle.size)
+
+	# Slightly off-centre: within the assist radius, so spells snap to it.
+	var near := _make_dummy(Vector3(0.6, 0.5, -12))
+	await process_frame
+	_check(input.get_aim_target() == near.health, "aim assist picks the enemy near the crosshair")
+	_check(input.get_aim_point().is_equal_approx(_aim(near)), "spells aim at its centre")
+	_check(reticle.target_tint.is_equal_approx(CombatFeedback.ENEMY_TINT), "the crosshair turns red when assist has a target")
+	caster.cast_cantrip(input.get_aim_point())
+	await _seconds(0.8)
+	_check(near.total_damage > 0.0, "an assisted Spark lands (%.1f)" % near.total_damage)
+
+	# Well off to the side: no snap.
+	near.position = Vector3(6, 0.5, -12)
+	await process_frame
+	_check(input.get_aim_target() == null, "enemies far from the crosshair aren't snapped to")
+
+	# Behind a wall: no snap.
+	near.position = Vector3(0.4, 0.5, -12)
+	var wall := StaticBody3D.new()
+	var shape := CollisionShape3D.new()
+	var box := BoxShape3D.new()
+	box.size = Vector3(6, 6, 0.5)
+	shape.shape = box
+	wall.add_child(shape)
+	_world.add_child(wall)
+	wall.position = Vector3(0, 1, -7)
+	await physics_frame
+	await physics_frame
+	_check(input.get_aim_target() == null, "enemies behind a wall aren't snapped to")
+	input.aim_assist = false
+	_check(input.get_aim_target() == null, "aim assist can be switched off")
 	await _clear_world()
 
 

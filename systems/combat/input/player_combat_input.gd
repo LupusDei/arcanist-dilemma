@@ -19,6 +19,10 @@ const AIM_DISTANCE := 60.0
 @export var aim_at_cursor := false
 ## Reticle, hit markers, damage numbers and camera kick.
 @export var feedback := true
+## Soft aim assist: spells snap to the target nearest the crosshair when one
+## is within assist_radius pixels (at 720p; scaled with the screen) and in sight.
+@export var aim_assist := true
+@export var assist_radius := 60.0
 
 var combat_feedback: CombatFeedback
 
@@ -30,7 +34,7 @@ func _ready() -> void:
 		combat_feedback = CombatFeedback.new()
 		combat_feedback.caster = caster
 		combat_feedback.aim_at_cursor = aim_at_cursor
-		combat_feedback.aim_provider = get_aim_point
+		combat_feedback.target_provider = get_aim_target
 		add_child(combat_feedback)
 
 
@@ -95,17 +99,67 @@ func _pressed(event: InputEvent, action: StringName, button: MouseButton, key: K
 	return false
 
 
-## The world point under the crosshair (or cursor), or a point far ahead.
+## The world point under the crosshair (or cursor): the assisted target's
+## centre when there is one, else what the ray hits, else a point far ahead.
 func get_aim_point() -> Vector3:
+	var target := get_aim_target()
+	if target:
+		return target.get_target_position()
 	var camera := get_viewport().get_camera_3d()
 	if camera == null:
 		return caster.global_position - caster.global_basis.z * AIM_DISTANCE
-	var screen := get_viewport().get_mouse_position() if aim_at_cursor else get_viewport().get_visible_rect().size * 0.5
-	var from := camera.project_ray_origin(screen)
-	var to := from + camera.project_ray_normal(screen) * AIM_DISTANCE
+	var from := camera.project_ray_origin(_aim_screen_point())
+	var to := from + camera.project_ray_normal(_aim_screen_point()) * AIM_DISTANCE
+	var hit := _ray(from, to)
+	return hit["position"] if not hit.is_empty() else to
+
+
+## The target soft aim assist would snap to, or null: the living non-ally
+## (enemy or prop) nearest the crosshair on screen, within assist_radius,
+## in range and not hidden behind a wall.
+func get_aim_target() -> HealthComponent:
+	if not aim_assist or caster == null:
+		return null
+	var camera := get_viewport().get_camera_3d()
+	if camera == null:
+		return null
+	var screen := _aim_screen_point()
+	var reach := assist_radius * maxf(get_viewport().get_visible_rect().size.y / 720.0, 1.0)
+	var own_team := caster.health.team if caster.health else &"player"
+	var best: HealthComponent = null
+	var best_distance := reach
+	for node in get_tree().get_nodes_in_group(HealthComponent.GROUP):
+		var target := node as HealthComponent
+		if target == null or target.is_dead or target.team == own_team or not target.is_inside_tree():
+			continue
+		var point := target.get_target_position()
+		if camera.is_position_behind(point) or camera.global_position.distance_to(point) > AIM_DISTANCE:
+			continue
+		var distance := camera.unproject_position(point).distance_to(screen)
+		if distance > best_distance or not _in_sight(camera.global_position, target):
+			continue
+		best = target
+		best_distance = distance
+	return best
+
+
+func _aim_screen_point() -> Vector2:
+	return get_viewport().get_mouse_position() if aim_at_cursor else get_viewport().get_visible_rect().size * 0.5
+
+
+func _ray(from: Vector3, to: Vector3) -> Dictionary:
 	var query := PhysicsRayQueryParameters3D.create(from, to)
 	var body := caster.get_parent()
 	if body is CollisionObject3D:
 		query.exclude = [(body as CollisionObject3D).get_rid()]
-	var hit := caster.get_world_3d().direct_space_state.intersect_ray(query)
-	return hit["position"] if not hit.is_empty() else to
+	return caster.get_world_3d().direct_space_state.intersect_ray(query)
+
+
+func _in_sight(from: Vector3, target: HealthComponent) -> bool:
+	var point := target.get_target_position()
+	var hit := _ray(from, point)
+	if hit.is_empty():
+		return true
+	if HealthComponent.find_on(hit["collider"]) == target:
+		return true
+	return from.distance_to(hit["position"]) >= from.distance_to(point) - target.hit_radius
