@@ -322,9 +322,13 @@ func _build_frame() -> void:
 	name_label = Label.new()
 	name_label.theme_type_variation = &"HeaderLabel"
 	name_label.text = "Arcanist"
+	name_label.add_theme_font_size_override("font_size", 32)
+	name_label.add_theme_constant_override("outline_size", 6)
 	frame.add_child(name_label)
 	level_label = Label.new()
 	level_label.text = "Level 1 · Arcanist"
+	level_label.add_theme_font_size_override("font_size", 20)
+	level_label.add_theme_constant_override("outline_size", 5)
 	frame.add_child(level_label)
 	points_button = Button.new()
 	points_button.name = "PointsButton"
@@ -384,7 +388,7 @@ func _build_dock() -> void:
 	cast_label.set_anchors_preset(Control.PRESET_FULL_RECT)
 	cast_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	cast_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	cast_label.add_theme_font_size_override("font_size", 13)
+	cast_label.add_theme_font_size_override("font_size", 16)
 	cast_bar.add_child(cast_label)
 	var cast_wrap := MarginContainer.new()
 	cast_wrap.add_theme_constant_override("margin_left", 120)
@@ -441,7 +445,7 @@ func _orb_label(orb: UiOrb) -> Label:
 	l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	l.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	l.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	l.add_theme_font_size_override("font_size", 17)
+	l.add_theme_font_size_override("font_size", 20)
 	l.add_theme_constant_override("outline_size", 5)
 	orb.add_child(l)
 	return l
@@ -464,5 +468,5 @@ func _build_banner() -> void:
 	banner.add_child(banner_title)
 	banner_text = Label.new()
 	banner_text.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	banner_text.add_theme_font_size_override("font_size", 19)
+	banner_text.add_theme_font_size_override("font_size", 22)
 	banner.add_child(banner_text)

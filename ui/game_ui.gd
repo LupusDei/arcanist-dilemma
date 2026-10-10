@@ -63,6 +63,7 @@ func _ready() -> void:
 
 	_resolve_sources()
 	bind_sources(health_source, caster_source, progression_source)
+	UiScale.fit(self)
 
 
 func bind_sources(health: Object, caster: Object, progression: Object) -> void:
