@@ -76,14 +76,21 @@ static func burst(spell: SpellData, context: SpellContext, center: Vector3, radi
 
 
 ## A direct hit on one target, then any chain jumps.
-static func hit_target(spell: SpellData, context: SpellContext, target: HealthComponent, point: Vector3, parent: Node) -> void:
+## `already_hit` (shared by a piercing projectile) keeps chains from jumping
+## back to targets this cast already struck; chained targets are added to it.
+static func hit_target(spell: SpellData, context: SpellContext, target: HealthComponent, point: Vector3, parent: Node, already_hit: Array[HealthComponent] = []) -> void:
 	apply_to(spell.effects, target, context, point)
-	if spell.chain_count <= 0:
+	if context.is_full_charge():
+		apply_to(spell.charged_effects, target, context, point)
+	var chains := spell.chain_count + (spell.charged_chain if context.is_full_charge() else 0)
+	if chains <= 0:
 		return
-	var hit: Array[HealthComponent] = [target]
+	var hit := already_hit
+	if target not in hit:
+		hit.append(target)
 	var current := target
 	var scale := context.scale
-	for i in spell.chain_count:
+	for i in chains:
 		var next: HealthComponent
 		for candidate in HealthComponent.find_in_radius(context.caster.get_tree(), current.get_target_position(), spell.chain_range, context.team):
 			if candidate not in hit:
@@ -92,10 +99,29 @@ static func hit_target(spell: SpellData, context: SpellContext, target: HealthCo
 		if next == null:
 			return
 		scale *= spell.chain_falloff
-		_spawn_flash(parent, next.get_target_position(), 0.4, spell.get_color())
+		if spell.visual:
+			_chain_arc(parent, current.get_target_position(), next.get_target_position(), spell.visual)
+			SpellImpact.spawn(parent, next.get_target_position(), Vector3.ZERO, spell.visual, 0.8, next)
+		else:
+			_spawn_flash(parent, next.get_target_position(), 0.4, spell.get_color())
 		apply_to(spell.effects, next, context.with_scale(scale), current.get_target_position())
 		hit.append(next)
 		current = next
+
+
+## A lightning bolt jumping from one target to the next.
+static func _chain_arc(parent: Node, from: Vector3, to: Vector3, visual: SpellVisual) -> void:
+	if parent == null or not parent.is_inside_tree():
+		return
+	var arc := LightningArcs.new()
+	arc.mode = LightningArcs.Mode.BETWEEN
+	arc.count = 2
+	arc.width = 0.07
+	arc.lifetime = 0.3
+	arc.start_point = from
+	arc.end_point = to
+	arc.style(visual, 2.8)
+	parent.add_child(arc)
 
 
 static func apply_to(effects: Array[SpellEffect], target: HealthComponent, context: SpellContext, point: Vector3) -> void:

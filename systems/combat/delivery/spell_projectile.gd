@@ -12,26 +12,39 @@ var direction := Vector3.FORWARD
 var travelled := 0.0
 
 var _pierce_left := 0
+var _speed := 0.0
+var _visual: BoltVisual
+var _power_scale := 1.0
 var _hit: Array[HealthComponent] = []
 var _exclude: Array[RID] = []
+var wall_hit := false
+var _wall_normal := Vector3.ZERO
 
 
 func launch(p_spell: SpellData, p_context: SpellContext, origin: Vector3, aim: Vector3) -> void:
 	spell = p_spell
 	context = p_context
-	_pierce_left = spell.pierce
+	_pierce_left = spell.pierce + (spell.charged_pierce if context.is_full_charge() else 0)
+	_speed = spell.projectile_speed * lerpf(1.0, spell.charge_speed, context.charge)
 	global_position = origin
 	var to_aim := aim - origin
 	direction = to_aim.normalized() if to_aim.length_squared() > 0.001 else -context.caster.global_basis.z
 	if context.caster is CollisionObject3D:
 		_exclude.append((context.caster as CollisionObject3D).get_rid())
-	_build_visual()
+	if spell.visual:
+		_power_scale = lerpf(1.0, spell.visual.charge_scale, context.charge)
+		_visual = BoltVisual.new()
+		add_child(_visual)
+		_visual.setup(spell.visual, _power_scale, get_parent())
+		LaunchFlash.spawn(get_parent(), origin, direction, spell.visual, _power_scale)
+	else:
+		_build_visual()
 
 
 func _physics_process(delta: float) -> void:
 	if spell == null:
 		return
-	var step := minf(spell.projectile_speed * delta, spell.cast_range - travelled)
+	var step := minf(_speed * delta, spell.cast_range - travelled)
 	var from := global_position
 	var to := from + direction * step
 
@@ -44,10 +57,12 @@ func _physics_process(delta: float) -> void:
 		if spell.radius > 0.0:
 			_finish(point)
 			return
-		SpellDelivery.hit_target(spell, context, target, point, get_parent())
+		if spell.visual:
+			SpellImpact.spawn(get_parent(), point, Vector3.ZERO, spell.visual, _power_scale, target)
 		_hit.append(target)
+		SpellDelivery.hit_target(spell, context, target, point, get_parent(), _hit)
 		if _pierce_left <= 0:
-			queue_free()
+			_end()
 			return
 		_pierce_left -= 1
 
@@ -58,8 +73,19 @@ func _physics_process(delta: float) -> void:
 
 
 func _finish(point: Vector3) -> void:
+	if spell.visual and (wall_hit or spell.radius > 0.0):
+		SpellImpact.spawn(get_parent(), point, _wall_normal, spell.visual, _power_scale)
+	elif spell.visual:
+		# Ran out of range: fizzle out with a smaller pop.
+		SpellImpact.spawn(get_parent(), point, Vector3.ZERO, spell.visual, _power_scale * 0.5)
 	if spell.radius > 0.0 or spell.ground_duration > 0.0:
 		SpellDelivery.impact(spell, context, point, get_parent())
+	_end()
+
+
+func _end() -> void:
+	if _visual and is_instance_valid(_visual):
+		_visual.detach()
 	queue_free()
 
 
@@ -81,6 +107,8 @@ func _cast_world(from: Vector3, to: Vector3) -> Variant:
 		return _cast_world(from, to)
 	if health:
 		return null
+	wall_hit = true
+	_wall_normal = result["normal"]
 	return result["position"]
 
 

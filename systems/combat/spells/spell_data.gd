@@ -53,6 +53,27 @@ enum PathTag { TRICK, WIZARD, MAGE, SORCERER }
 ## Splits into this many smaller bursts around the impact (Scattering Fireball).
 @export var scatter_count := 0
 
+@export_group("Charge")
+## Hold the button to gather power, release to fire. A quick tap casts normally.
+@export var chargeable := false
+## Seconds of holding to reach full charge.
+@export var max_charge_time := 1.0
+## Holds shorter than this are plain taps.
+@export var charge_tap_time := 0.12
+## Power multiplier at full charge (scales smoothly with charge).
+@export var charge_power := 3.0
+## Projectile speed multiplier at full charge.
+@export var charge_speed := 1.4
+## Extra targets pierced, and chain jumps, at full charge.
+@export var charged_pierce := 0
+@export var charged_chain := 0
+## Extra effects on targets at full charge (a knockback, a stun).
+@export var charged_effects: Array[SpellEffect] = []
+
+@export_group("Look")
+## The bolt, trail, impact and sounds. Empty falls back to a plain sphere.
+@export var visual: SpellVisual
+
 @export_group("Effects")
 ## Applied to each target the spell reaches (or to the caster for SELF).
 @export var effects: Array[SpellEffect] = []

@@ -1,8 +1,16 @@
 [gd_resource type="Resource" script_class="SpellData" format=3]
 
 [ext_resource type="Script" path="res://systems/combat/effects/spell_effect.gd" id="1_45l51"]
+[ext_resource type="Script" path="res://systems/combat/effects/knockback_effect.gd" id="2_n8dhc"]
 [ext_resource type="Script" path="res://systems/combat/effects/damage_effect.gd" id="2_xfmu7"]
 [ext_resource type="Script" path="res://systems/combat/spells/spell_data.gd" id="3_n8dhc"]
+[ext_resource type="Resource" path="res://data/spells/visuals/arcane_spark.tres" id="5_xse57"]
+
+[sub_resource type="Resource" id="Resource_eamcv"]
+script = ExtResource("2_n8dhc")
+force = 6.0
+upward = 1.5
+from_caster = true
 
 [sub_resource type="Resource" id="Resource_xse57"]
 script = ExtResource("2_xfmu7")
@@ -12,8 +20,14 @@ amount = 6.0
 script = ExtResource("3_n8dhc")
 id = &"spark"
 display_name = "Spark"
-description = "The old finger sparks: a free, weak bolt that never runs out."
+description = "The old finger sparks: a free bolt that never runs out. Hold to gather power; a full charge pierces, jumps to nearby enemies and knocks them back."
 damage_type = 3
 cooldown = 0.35
 projectile_speed = 26.0
+chargeable = true
+max_charge_time = 1.1
+charged_pierce = 1
+charged_chain = 2
+charged_effects = Array[ExtResource("1_45l51")]([SubResource("Resource_eamcv")])
+visual = ExtResource("5_xse57")
 effects = Array[ExtResource("1_45l51")]([SubResource("Resource_xse57")])

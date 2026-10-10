@@ -6,6 +6,10 @@ var spell: SpellData
 ## The body that cast the spell (kill credit, knockback direction).
 var caster: Node3D
 var caster_health: HealthComponent
+## The SpellCaster that cast it, for hit reports.
+var caster_node: SpellCaster
+## 0 to 1: how long a chargeable spell was held.
+var charge := 0.0
 var team := &"player"
 ## Final multiplier on damage, healing and wards: stats, path scaling, overstrain.
 var power := 1.0
@@ -33,6 +37,8 @@ func with_scale(new_scale: float) -> SpellContext:
 	copy.spell = spell
 	copy.caster = caster
 	copy.caster_health = caster_health
+	copy.caster_node = caster_node
+	copy.charge = charge
 	copy.team = team
 	copy.power = power
 	copy.force_power = force_power
@@ -41,3 +47,7 @@ func with_scale(new_scale: float) -> SpellContext:
 	copy.scale = new_scale
 	copy.origin = origin
 	return copy
+
+
+func is_full_charge() -> bool:
+	return charge >= 0.999
