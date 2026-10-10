@@ -11,6 +11,8 @@ var charge := 0.0
 var charging := false
 ## Show even when the mouse isn't captured (sandbox, recordings).
 var force_visible := false
+## Colour of what the reticle is over (red enemy, gold prop); transparent for nothing.
+var target_tint := Color.TRANSPARENT
 
 var _hit_time := -10.0
 var _hit_crit := false
@@ -49,7 +51,9 @@ func _draw() -> void:
 
 	# Center dot.
 	draw_circle(c, 2.6, shadow)
-	draw_circle(c, 1.8, Color(1, 1, 1, 0.95))
+	var on_target := target_tint.a > 0.0
+	var dot_col := Color(target_tint, 1.0) if on_target else Color(1, 1, 1, 0.95)
+	draw_circle(c, 2.4 if on_target else 1.8, dot_col)
 
 	# Four rune ticks pointing in.
 	for i in 4:
@@ -57,7 +61,7 @@ func _draw() -> void:
 		var a := c + dir * spread
 		var b := c + dir * (spread + 7.0)
 		draw_line(a, b, shadow, 4.0, true)
-		draw_line(a, b, accent.lerp(Color.WHITE, 0.5), 2.0, true)
+		draw_line(a, b, Color(target_tint, 1.0) if on_target else accent.lerp(Color.WHITE, 0.5), 2.0, true)
 
 	# Charge ring with a bright head.
 	var radius := 22.0

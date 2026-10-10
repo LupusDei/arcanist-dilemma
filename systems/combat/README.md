@@ -30,7 +30,7 @@ A data-driven spell system for the three paths, plus health, damage and status e
 | `vfx/bolt_visual.gd`, `bolt_trail.gd`, `lightning_arcs.gd`, `spark_particles.gd` | The flying bolt: flickering glow, comet ribbon trail, crackling arcs and embers. `SparkParticles` is a small MultiMesh particle system (CPUParticles3D drew black discs under the compatibility renderer with glow). |
 | `vfx/launch_flash.gd`, `spell_impact.gd`, `scorch_mark.gd` | The sigil and spray at launch; the impact flash, shock ring, sparks, branching lightning, arcs crawling on the target and the scorch left on walls. |
 | `vfx/charge_orb.gd` | Power gathering in the casting hand while a spell charges, with a rising hum and a ping at full charge. |
-| `vfx/combat_feedback.gd`, `spell_reticle.gd`, `damage_number.gd`, `camera_kick.gd` | The reticle (charge ring, hit, crit and kill markers), floating damage numbers, camera shake and hit-stop. |
+| `vfx/combat_feedback.gd`, `spell_reticle.gd`, `damage_number.gd`, `camera_kick.gd` | The reticle (charge ring, hit, crit and kill markers; red over an enemy, gold over a prop), floating damage numbers, camera shake (also when the player is hurt) and hit-stop. Targets on team `&"prop"` take hits quietly: no numbers, markers or hit-stop. |
 | `vfx/spell_sfx.gd` | Procedural sounds (zap, crack, hum, ping, crackle) until real audio exists. |
 | `vfx/shaders/` | Unshaded billboard glow, ribbon, sigil, shockwave, scorch and particle shaders. |
 

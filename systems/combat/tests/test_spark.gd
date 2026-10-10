@@ -16,6 +16,7 @@ func _run() -> void:
 	await _test_charge_rules()
 	await _test_effects_clean_up()
 	await _test_feedback()
+	await _test_props_and_aim()
 	_test_sounds()
 	await _test_hitstop()
 
@@ -187,6 +188,44 @@ func _test_feedback() -> void:
 	_check(a.health.is_dead and feedback.reticle._kill_time > 0.0, "a kill shows the kill marker")
 	await _seconds(1.5)
 	_check(is_zero_approx(Engine.time_scale - 1.0), "time runs normally after the hit")
+	await _clear_world()
+
+
+func _test_props_and_aim() -> void:
+	print("-- props, reticle tint, hurt kick")
+	_new_world()
+	var caster := _make_caster()
+	var camera := Camera3D.new()
+	_world.add_child(camera)
+	camera.position = Vector3(0, 1.5, 0)
+	camera.current = true
+	var feedback := CombatFeedback.new()
+	feedback.caster = caster
+	caster.get_parent().add_child(feedback)
+	await process_frame
+	feedback.reticle.force_visible = true
+
+	var prop := _make_dummy(Vector3(0, 0.5, -6))
+	prop.health.team = &"prop"
+	await _seconds(0.1)
+	_check(feedback.target_under_reticle() == prop.health, "the reticle finds the prop it's over")
+	_check(feedback.reticle.target_tint.is_equal_approx(CombatFeedback.PROP_TINT), "the reticle turns gold over a prop")
+	caster.cast_cantrip(_aim(prop))
+	await _seconds(0.6)
+	_check(prop.total_damage > 0.0, "props still take the hit")
+	_check(_count(DamageNumber) == 0 and feedback.reticle._hit_time < 0.0, "props get no damage numbers or hit markers")
+
+	prop.queue_free()
+	_make_dummy(Vector3(0.3, 0.5, -8))
+	await _seconds(0.1)
+	_check(feedback.reticle.target_tint.is_equal_approx(CombatFeedback.ENEMY_TINT), "the reticle turns red over an enemy")
+	camera.rotation.y = 1.2
+	await _seconds(0.1)
+	_check(feedback.reticle.target_tint.a == 0.0, "and goes back to normal off target")
+
+	var trauma_before := feedback.kick.trauma
+	caster.health.take_damage(Hit.new(30.0, DamageType.Kind.PHYSICAL, null))
+	_check(feedback.kick.trauma > trauma_before + 0.15, "getting hurt kicks the camera (%.2f)" % feedback.kick.trauma)
 	await _clear_world()
 
 

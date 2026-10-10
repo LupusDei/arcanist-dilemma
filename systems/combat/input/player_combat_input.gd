@@ -29,6 +29,8 @@ func _ready() -> void:
 	if feedback and caster:
 		combat_feedback = CombatFeedback.new()
 		combat_feedback.caster = caster
+		combat_feedback.aim_at_cursor = aim_at_cursor
+		combat_feedback.aim_provider = get_aim_point
 		add_child(combat_feedback)
 
 
