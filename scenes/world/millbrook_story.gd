@@ -1,6 +1,6 @@
 extends Node3D
 ## Puts the prologue and The Hat and the Warden into the generated Millbrook:
-## quest NPCs and props next to the buildings the village factory placed,
+## quest NPCs and props, the opening's chores and lessons (systems/tutorial) next to the buildings the village factory placed,
 ## quest areas over the home, tavern, green, barley and hill road, the old
 ## mill by the pond, the wolves in the barley, and the story events
 ## (lightning, the rider on the ridge, Hale's escort, the Wardens leaving).
@@ -22,6 +22,9 @@ var _spots: Dictionary = {}  # npc_id -> Vector3 where they normally stand
 var _barley_center := Vector3.ZERO
 var _flash: ColorRect
 var _hounds: Array[Node] = []
+var _spoon: ChoreTarget
+var _stove: ChoreTarget
+var _jar: ChoreTarget
 
 
 func _ready() -> void:
@@ -86,6 +89,7 @@ func _place(plan: VillagePlan) -> void:
 	_terrain.reserve_area(mill, 6.0, true)
 	_add_old_mill(_at(mill))
 	_add_npc(&"old_mill_floorboards", _at(mill) + Vector3(0, 0.05, 0), "", true)
+	_add_tutorial(door)
 
 
 ## A point in front of a building's door, `out` metres from the wall, shifted
@@ -138,20 +142,36 @@ func _add_kitchen_props(at: Vector3, yaw: float) -> void:
 	add_child(root)
 	var wood := StandardMaterial3D.new()
 	wood.albedo_color = Color(0.5, 0.34, 0.2)
-	var iron := StandardMaterial3D.new()
-	iron.albedo_color = Color(0.2, 0.2, 0.22)
-	var glow := StandardMaterial3D.new()
-	glow.albedo_color = Color(1.0, 0.5, 0.2)
-	glow.emission_enabled = true
-	glow.emission = Color(1.0, 0.45, 0.15)
-	# Table with a spoon, and an iron stove: the first two chores.
+	# The kitchen table; the spoon on it, the stove and the jar on the fence
+	# post are the opening's chores (ChoreTarget), each done with one trick.
 	_box(root, Vector3(1.8, 0.1, 1.0), Vector3(-1.6, 0.85, 0), wood)
 	for leg in [Vector3(-2.35, 0.4, -0.4), Vector3(-0.85, 0.4, -0.4), Vector3(-2.35, 0.4, 0.4), Vector3(-0.85, 0.4, 0.4)]:
 		_box(root, Vector3(0.1, 0.8, 0.1), leg, wood)
-	_box(root, Vector3(0.35, 0.03, 0.06), Vector3(-1.6, 0.92, 0), iron)
-	_box(root, Vector3(0.9, 0.9, 0.9), Vector3(1.8, 0.45, 0), iron)
-	_box(root, Vector3(0.4, 0.25, 0.05), Vector3(1.8, 0.35, 0.46), glow)
-	_box(root, Vector3(0.2, 1.2, 0.2), Vector3(1.95, 1.4, -0.25), iron)
+	_spoon = _add_chore(root, ChoreTarget.Kind.SPOON, &"nudge", &"spoon_moved", "Spoon", Vector3(-1.6, 0.92, 0))
+	_stove = _add_chore(root, ChoreTarget.Kind.STOVE, &"spark", &"stove_lit", "Stove", Vector3(1.8, 0, 0))
+	_jar = _add_chore(root, ChoreTarget.Kind.JAR, &"jolt", &"jar_jolted", "Jar", Vector3(-6.0, 0, 3.2))
+	var jar_ground := _jar.global_position
+	_jar.global_position.y = _terrain.height_at(jar_ground.x, jar_ground.z)
+
+
+func _add_chore(root: Node3D, kind: ChoreTarget.Kind, spell: StringName, event: StringName, label: String, at: Vector3) -> ChoreTarget:
+	var chore := ChoreTarget.new()
+	chore.name = label
+	chore.kind = kind
+	chore.spell_id = spell
+	chore.event_name = event
+	chore.label = label
+	chore.position = at
+	root.add_child(chore)
+	return chore
+
+
+## The opening's lessons, taught on the chores and in the barley.
+func _add_tutorial(yard: Vector3) -> void:
+	var tutorial := OpeningTutorial.new()
+	tutorial.name = "OpeningTutorial"
+	tutorial.setup(_spoon, _stove, _jar, _npcs.get(&"tam"), yard, _barley_center)
+	add_child(tutorial)
 
 
 func _add_old_mill(at: Vector3) -> void:
@@ -248,6 +268,7 @@ func _spawn_hounds() -> void:
 		var spot := Vector2(_barley_center.x, _barley_center.z) + Vector2(-3.0 + i * 3.0, 1.5 * (i % 2))
 		hound.position = _at(spot) + Vector3(0, 0.5, 0)
 		hound.set(&"pack_id", 7)
+		hound.set_meta(&"barley_wolf", true)
 		get_parent().add_child(hound)
 		_hounds.append(hound)
 

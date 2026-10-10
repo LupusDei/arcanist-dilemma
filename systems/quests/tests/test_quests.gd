@@ -33,7 +33,7 @@ func _run() -> void:
 		"test_story_state_flags_and_save",
 		"test_conditions",
 		"test_prologue_playthrough",
-		"test_cast_needs_the_right_place",
+		"test_chores_need_their_effect",
 		"test_kills_and_loot_from_enemy_hooks",
 		"test_key_quest_hand_over",
 		"test_key_quest_hide_and_lie",
@@ -96,14 +96,20 @@ func talk(m: QuestManager, npc: StringName, picks: Array = []) -> void:
 	play_active(m, picks)
 
 
+## The opening's chores: the spoon and stove (the ChoreTargets send these
+## events when the right spell hits them), Tam, the jar and Tam's promise.
+func do_chores(m: QuestManager) -> void:
+	m.notify_event(&"spoon_moved")
+	m.notify_event(&"stove_lit")
+	talk(m, &"tam")
+	m.notify_event(&"jar_jolted")
+	play_active(m)
+
+
 ## Plays the prologue to the end. [param route] picks the Wardens answer
 ## (0 tell everything, 1 half truth, 2 lie).
 func play_prologue(m: QuestManager, wardens_choice := 0) -> void:
-	m.notify_reached(&"kitchen")
-	m.notify_spell_cast(&"nudge")
-	m.notify_spell_cast(&"spark")
-	m.notify_left(&"kitchen")
-	talk(m, &"tam")
+	do_chores(m)
 	talk(m, &"rook", [1])
 	talk(m, &"farmer_hollis")
 	for i in 3:
@@ -250,12 +256,18 @@ func test_prologue_playthrough() -> void:
 	check(m.get_quest_stage(&"prologue") == &"chores", "starts with chores")
 	check(not m.talk_to(&"old_man"), "the old man isn't there yet")
 
-	m.notify_reached(&"kitchen")
-	m.notify_spell_cast(&"nudge")
+	m.notify_event(&"spoon_moved")
 	check(m.get_progress(&"prologue").is_objective_done(&"spoon"), "spoon done")
-	m.notify_spell_cast(&"spark")
+	m.notify_event(&"stove_lit")
+	check(m.get_quest_stage(&"prologue") == &"show_tam", "chores done -> show Tam")
 	talk(m, &"tam")
-	check(m.get_quest_stage(&"prologue") == &"bully", "chores done -> bully")
+	check(m.get_quest_stage(&"prologue") == &"jar", "Tam asks for the jar")
+	check(m.pick_dialogue(&"tam").id == &"tam_jar_wait", "Tam reminds you about the jar")
+	m.notify_event(&"jar_jolted")
+	check(m.is_in_dialogue() and m.active_dialogue.dialogue.id == &"tam_promise", "the jar leads into Tam's promise")
+	play_active(m, [0])
+	check(m.story.get_flag(&"tam_bond") == 1.0 or m.story.get_flag(&"tam_bond") == 1, "the promise is remembered")
+	check(m.get_quest_stage(&"prologue") == &"bully", "jar done -> bully")
 	talk(m, &"rook", [1])
 	check(m.story.get_flag(&"rook_outcome") == "jolted_cap", "rook choice recorded")
 	check(m.story.alignment.law == -2.0 and m.story.alignment.good == 2.0, "rook choice moved alignment")
@@ -290,21 +302,22 @@ func test_prologue_playthrough() -> void:
 	check(m.get_quest_state(&"prologue") == QuestProgress.COMPLETED, "optional children talk doesn't hold it back")
 	check(completed == [&"prologue"], "quest_completed fired")
 	check(m.story.is_set(&"prologue_done"), "on_complete flag set")
-	check(xp[0] == 190, "chores 40 + prologue 150 XP (got %d)" % xp[0])
+	check(xp[0] == 330, "chores 40 + jar 30 + Rook 30 + wolves 80 + prologue 150 XP (got %d)" % xp[0])
 	check(started == [&"hat_and_warden"], "key quest starts after the prologue")
 	check(flags.has(&"old_man_struck") and not shifts.is_empty(), "flag_changed and alignment_changed fire")
 	free_manager(m)
 
 
-func test_cast_needs_the_right_place() -> void:
+func test_chores_need_their_effect() -> void:
 	var m := make_manager()
-	m.notify_spell_cast(&"nudge")
-	check(not m.get_progress(&"prologue").is_objective_done(&"spoon"), "nudge outside the kitchen doesn't count")
 	m.notify_reached(&"kitchen")
-	m.notify_spell_cast(&"jolt")
-	check(not m.get_progress(&"prologue").is_objective_done(&"spoon"), "wrong spell doesn't count")
 	m.notify_spell_cast(&"nudge")
-	check(m.get_progress(&"prologue").is_objective_done(&"spoon"), "nudge in the kitchen counts")
+	check(not m.get_progress(&"prologue").is_objective_done(&"spoon"), "casting near the spoon isn't enough")
+	m.notify_event(&"stove_lit")
+	check(not m.get_progress(&"prologue").is_objective_done(&"spoon"), "the stove doesn't count for the spoon")
+	m.notify_event(&"jar_jolted")
+	m.notify_event(&"spoon_moved")
+	check(m.get_quest_stage(&"prologue") == &"show_tam", "the spoon flying does, and the jar only counts once Tam asks")
 	free_manager(m)
 
 
@@ -436,10 +449,13 @@ func test_old_man_name_stays_hidden() -> void:
 
 func test_dialogue_priority_once_and_locked_choices() -> void:
 	var m := make_manager()
+	check(m.pick_dialogue(&"tam").id == &"tam_idle", "Tam's quest talk waits for the chores")
+	m.notify_event(&"spoon_moved")
+	m.notify_event(&"stove_lit")
 	check(m.pick_dialogue(&"tam").id == &"tam_chores", "quest talk beats idle chatter")
 	check(m.pick_dialogue(&"rook").id == &"rook_idle", "idle when nothing is due")
 	talk(m, &"rook")
-	check(m.get_quest_stage(&"prologue") == &"chores", "idle talk doesn't advance")
+	check(m.get_quest_stage(&"prologue") == &"show_tam", "idle talk doesn't advance")
 	check(m.start_dialogue(&"tam_idle") != null, "scripted start")
 	check(m.start_dialogue(&"rook_idle") == null, "second dialogue is queued")
 	play_active(m)
@@ -449,10 +465,7 @@ func test_dialogue_priority_once_and_locked_choices() -> void:
 
 func test_save_and_load_mid_quest() -> void:
 	var m := make_manager()
-	m.notify_reached(&"kitchen")
-	m.notify_spell_cast(&"nudge")
-	m.notify_spell_cast(&"spark")
-	talk(m, &"tam")
+	do_chores(m)
 	talk(m, &"rook", [0])
 	talk(m, &"farmer_hollis")
 	m.notify_killed(&"gloom_hound")
@@ -510,7 +523,7 @@ func test_dialogue_ui_and_tracker() -> void:
 	ui.dialogue_box.chars_per_second = 0.0
 	check(ui.manager == m, "UI finds the manager")
 	var lines := ui.tracker.get_lines()
-	check(lines.size() == 4 and lines[0] == "◆ Tricks", "tracker shows the prologue (%s)" % [lines])
+	check(lines.size() == 3 and lines[0] == "◆ Tricks", "tracker shows the prologue (%s)" % [lines])
 	check(lines[1].begins_with("• Nudge the spoon"), "tracker shows objectives")
 
 	m.goto_stage(&"prologue", &"wolves")

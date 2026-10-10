@@ -3,9 +3,9 @@ extends Node3D
 ## to end with the real player, spells, wolves, dialogue box and tracker.
 ## Open res://systems/quests/sandbox/quest_sandbox.tscn and press F6.
 ##
-## Walk up to anyone with a "!" and press E. Cast Nudge and Spark in the
-## kitchen. Debug keys: G jumps to the next objective, F1 to F3 count a cast
-## of Spark, Nudge or Jolt, F4 counts a wolf kill, F5 a Warden escort kill,
+## Walk up to anyone with a "!" and press E. The chores' props live in the real
+## Millbrook (systems/tutorial). Debug keys: G jumps to the next objective, F1
+## to F3 count a cast of Spark, Nudge or Jolt and do its chore (stove, spoon, jar), F4 counts a wolf kill, F5 a Warden escort kill,
 ## F6 saves, F7 loads, F9 starts over.
 
 const PLAYER_SCENE := preload("res://scenes/player/player.tscn")
@@ -98,10 +98,13 @@ func _unhandled_input(event: InputEvent) -> void:
 			_jump_to_next_objective()
 		KEY_F1:
 			quests.notify_spell_cast(&"spark")
+			quests.notify_event(&"stove_lit")
 		KEY_F2:
 			quests.notify_spell_cast(&"nudge")
+			quests.notify_event(&"spoon_moved")
 		KEY_F3:
 			quests.notify_spell_cast(&"jolt")
+			quests.notify_event(&"jar_jolted")
 		KEY_F4:
 			quests.notify_killed(&"gloom_hound")
 		KEY_F5:
