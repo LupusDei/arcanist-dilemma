@@ -1,16 +1,18 @@
 class_name GameFeedback
 extends CanvasLayer
-## The game's answer to everything the player does, so every action reads
-## clearly on screen and by ear:
-## - a crosshair that turns red over an enemy and gold over something you can
-##   use magic on, and flicks out when a spell lands
-## - damage numbers over enemies (bigger and gold on a crit), status words
-##   ("Stunned!"), red numbers and a camera kick when the player is hurt
-## - "+N XP" where a monster fell, a short hit-stop on each kill, a pillar of
-##   light on level-up (the HUD shows the banner), item and gold pickups
+## The game's answer to the things the combat layer doesn't cover, so every
+## action reads clearly on screen and by ear. The combat system
+## (systems/combat/vfx, CombatFeedback) owns the reticle, hit markers, damage
+## numbers on your spells' targets, camera kick and hit-stop; this adds:
+## - status words over enemies ("Stunned!")
+## - a red number when the player is hurt, a green one on a big heal
+## - "+N XP" where a monster fell, and a pillar of light on level-up (the HUD
+##   shows the banner)
+## - item and gold pickups
 ## - a toast with a chime for every finished quest objective
-## - why a cast failed ("Not enough mana", "Recharging")
-## - a synthesized sound for each of these (FeedbackSfx)
+## - why a cast failed ("Not enough mana", "Jolt is recharging")
+## - a synthesized sound for each of these, and for spells that have no
+##   sound of their own yet (FeedbackSfx)
 ##
 ## GameSession adds one per play scene. It reads the player, the Progression,
 ## Items and Quests autoloads and every HealthComponent through signals only.
@@ -20,8 +22,6 @@ const GOLD := Color(1.0, 0.84, 0.42)
 const XP_COLOR := Color(1.0, 0.78, 0.3)
 const HURT := Color(1.0, 0.32, 0.28)
 const HEAL := Color(0.45, 1.0, 0.45)
-const ENEMY_AIM := Color(1.0, 0.35, 0.3)
-const PROP_AIM := Color(1.0, 0.85, 0.35)
 const BASE_HEIGHT := 900.0
 
 const FAIL_TEXT := {
@@ -33,22 +33,16 @@ const FAIL_TEXT := {
 
 ## The player's root control; everything 2D sits in here and scales with the window.
 var root: Control
-var crosshair: FeedbackCrosshair
 var toasts: VBoxContainer
 var cast_message: Label
 
 var _player: Node3D
 var _caster: Node
-var _aim: Node
-var _camera: Camera3D
-var _shake := 0.0
 var _last_kill_position := Vector3.INF
 var _last_kill_time := -10.0
-var _last_hit_sound := -10.0
 var _quiet_until := 0.0
 var _gold := -1
 var _cast_tween: Tween
-var _hitstop_active := false
 ## Every popup this layer has spawned, newest last (tests read it).
 var popups_shown: Array[String] = []
 var toasts_shown: Array[String] = []
@@ -64,9 +58,6 @@ func _ready() -> void:
 	root.name = "Root"
 	root.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(root)
-	crosshair = FeedbackCrosshair.new()
-	crosshair.name = "Crosshair"
-	root.add_child(crosshair)
 	_build_toasts()
 	_build_cast_message()
 	_fit()
@@ -117,59 +108,12 @@ func _bind_player() -> void:
 	if _player == null:
 		return
 	_caster = _player.get_node_or_null(^"SpellCaster")
-	_aim = _player.get_node_or_null(^"PlayerCombatInput")
-	_camera = _player.get_node_or_null(^"CameraPivot/SpringArm3D/Camera3D") as Camera3D
 	if _caster != null:
 		_caster.spell_cast.connect(_on_spell_cast)
 		_caster.cast_failed.connect(_on_cast_failed)
 	var health := _player.get_node_or_null(^"HealthComponent")
 	if health != null:
 		_watch_health(health)
-
-
-func _process(delta: float) -> void:
-	_update_crosshair()
-	if _camera != null:
-		if _shake > 0.0:
-			_shake = maxf(_shake - delta * 2.5, 0.0)
-			var amount := _shake * _shake * 0.18
-			_camera.h_offset = randf_range(-amount, amount)
-			_camera.v_offset = randf_range(-amount, amount)
-		elif _camera.h_offset != 0.0 or _camera.v_offset != 0.0:
-			_camera.h_offset = 0.0
-			_camera.v_offset = 0.0
-
-
-func shake(strength: float) -> void:
-	_shake = clampf(maxf(_shake, strength), 0.0, 1.0)
-
-
-# --- crosshair ---------------------------------------------------------------
-
-func _update_crosshair() -> void:
-	var playing := Input.mouse_mode == Input.MOUSE_MODE_CAPTURED and not get_tree().paused
-	crosshair.visible = playing and _player != null
-	if not crosshair.visible:
-		return
-	crosshair.position = root.size * 0.5
-	var color := TEXT
-	if _aim != null and _aim.has_method(&"get_aim_point"):
-		var target := aimed_target()
-		if target != null:
-			color = PROP_AIM if target.team == &"prop" else ENEMY_AIM
-	crosshair.tint = color
-
-
-## The enemy or prop under the crosshair, if any.
-func aimed_target() -> HealthComponent:
-	if _aim == null:
-		return null
-	var point: Vector3 = _aim.get_aim_point()
-	if _player != null and point.distance_to(_player.global_position) > 45.0:
-		return null
-	for target in HealthComponent.find_in_radius(get_tree(), point, 1.2, &"player"):
-		return target
-	return null
 
 
 # --- health ------------------------------------------------------------------
@@ -192,26 +136,8 @@ func _watch_health(health: Node) -> void:
 		return
 	if health.get(&"team") == &"prop":
 		return
-	health.damaged.connect(_on_enemy_damaged.bind(health))
 	if health.has_signal(&"status_applied"):
 		health.status_applied.connect(_on_enemy_status.bind(health))
-
-
-func _on_enemy_damaged(hit: Object, amount: float, health: Node) -> void:
-	if amount < 1.0 or not is_instance_valid(health):
-		return
-	var crit: bool = hit != null and bool(hit.get(&"is_crit"))
-	var color := GOLD if crit else TEXT
-	var spell: Variant = hit.get(&"spell") if hit != null else null
-	if spell is SpellData and not crit:
-		color = TEXT.lerp(spell.get_color(), 0.35)
-	var text := ("%d!" % roundi(amount)) if crit else str(roundi(amount))
-	popup(_target_position(health) + Vector3(randf_range(-0.4, 0.4), 0.3, 0.0), text, color, 1.5 if crit else 1.0)
-	crosshair.hit_marker(crit)
-	var t := _now()
-	if t - _last_hit_sound > 0.05:
-		_last_hit_sound = t
-		FeedbackSfx.play(self, &"crit" if crit else &"hit", -8.0, randf_range(0.9, 1.15))
 
 
 func _on_enemy_status(kind: int, _duration: float, health: Node) -> void:
@@ -235,7 +161,6 @@ func _on_player_damaged(_hit: Object, amount: float) -> void:
 	if amount < 1.0 or _player == null:
 		return
 	popup(_player.global_position + Vector3(0.5, 2.0, 0), "-%d" % roundi(amount), HURT, 1.1)
-	shake(0.35 + minf(amount / 30.0, 0.5))
 	FeedbackSfx.play(self, &"hurt", -5.0, randf_range(0.9, 1.1))
 
 
@@ -257,21 +182,6 @@ func on_enemy_died(enemy: Node, _xp_value: int, _loot: Array) -> void:
 	if enemy is Node3D:
 		_last_kill_position = (enemy as Node3D).global_position + Vector3(0, 2.2, 0)
 		_last_kill_time = _now()
-		_spawn_ring(_last_kill_position - Vector3(0, 1.8, 0), Color(1.0, 0.8, 0.5), 1.8)
-	FeedbackSfx.play(self, &"kill", -4.0)
-	shake(0.25)
-	hitstop(0.07)
-
-
-## Freezes the action for a moment so a kill lands with weight.
-func hitstop(seconds: float) -> void:
-	if _hitstop_active or DisplayServer.get_name() == "headless":
-		return
-	_hitstop_active = true
-	Engine.time_scale = 0.08
-	await get_tree().create_timer(seconds, true, false, true).timeout
-	Engine.time_scale = 1.0
-	_hitstop_active = false
 
 
 func _on_xp_gained(amount: int, source: String) -> void:
@@ -290,7 +200,6 @@ func _on_leveled_up(level: int) -> void:
 	var at := _player.global_position
 	_spawn_ring(at + Vector3(0, 0.1, 0), GOLD, 4.0, 0.9)
 	_spawn_pillar(at)
-	shake(0.3)
 
 
 # --- items -------------------------------------------------------------------
@@ -378,17 +287,18 @@ func toast(text: String, done: bool) -> void:
 
 # --- casting -----------------------------------------------------------------
 
+## A cast sound for spells that don't have their own yet (the combat system
+## gives Spark and other spells with a visual their own voice).
 func _on_spell_cast(spell: Resource) -> void:
-	var id := StringName(spell.get(&"id")) if spell != null else &""
-	match id:
-		&"spark":
-			FeedbackSfx.play(self, &"spark", -12.0, randf_range(0.95, 1.1))
+	if spell == null or spell.get(&"visual") != null:
+		return
+	match StringName(spell.get(&"id")):
 		&"nudge":
 			FeedbackSfx.play(self, &"whoosh", -3.0)
 		&"jolt":
 			FeedbackSfx.play(self, &"zap", -5.0)
 		_:
-			var delivery: int = int(spell.get(&"delivery")) if spell != null else 0
+			var delivery := int(spell.get(&"delivery"))
 			FeedbackSfx.play(self, &"spark" if delivery == SpellData.Delivery.PROJECTILE else &"zap", -9.0)
 
 

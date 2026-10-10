@@ -147,7 +147,7 @@ func _run() -> void:
 	await _frames(30)
 	print("     lessons shown: %s" % [_tutorial.shown])
 	_check(_tutorial.shown.has(&"fight"), "the fight lesson showed")
-	_check(_feedback.popups_shown.any(func(t: String) -> bool: return t.is_valid_int()), "damage numbers show on hits")
+	_check(_feedback.popups_shown.has("Stunned!") or not _tutorial.seen(&"jolt_fight"), "a stunned wolf says so")
 	_check(_feedback.popups_shown.any(func(t: String) -> bool: return t.begins_with("+") and t.ends_with(" XP") and t != "+40 XP"), "kills show XP")
 	_check(_quests.get_quest_stage(&"prologue") == &"wolves_report", "-> report to Hollis")
 	_check(progression.progression.level == 2, "the first fight ends in level 2 (xp %d, level %d)" % [progression.progression.xp, progression.progression.level])

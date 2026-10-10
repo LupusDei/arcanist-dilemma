@@ -24,7 +24,7 @@ The chores really need the right spell. A wrong one makes the prop wobble and Ta
 - `hint_card.gd`: `HintCard`, the lesson card. Scales with the window height.
 - `scenes/world/millbrook_story.gd` places the props in the yard and adds the `OpeningTutorial`.
 
-Feedback for every action (damage numbers, XP, the crosshair, sounds) is in `systems/feedback/`.
+Feedback for your spells (reticle, damage numbers, hit-stop) comes from the combat system; XP, objective toasts, level-up and the other sounds are in `systems/feedback/`.
 
 ## Tests
 
