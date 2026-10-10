@@ -9,7 +9,7 @@ signal confirmed(character: Dictionary)
 signal cancelled
 
 var character: Dictionary = UiCharacterPresets.default_character()
-var portrait: UiPortrait
+var portrait: CharacterPortrait3D
 var name_edit: LineEdit
 var sex_buttons: Array[Button] = []
 var value_labels := {}
@@ -95,7 +95,8 @@ func _build() -> void:
 	var body := HBoxContainer.new()
 	body.add_theme_constant_override("separation", 28)
 	root.add_child(body)
-	portrait = UiPortrait.new()
+	# The real game model, live: every option changes it as it's picked.
+	portrait = CharacterPortrait3D.new()
 	portrait.name = "Portrait"
 	body.add_child(portrait)
 

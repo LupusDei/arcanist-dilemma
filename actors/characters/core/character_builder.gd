@@ -42,9 +42,10 @@ static func populate(rig: CharacterRig, spec: CharacterSpec) -> void:
 	rig.add_child(model)
 	rig.body_root = model
 	_make_joints(rig, model, d)
-	_build_body(rig, spec, d, pal)
-	_build_head(rig, spec, d)
-	_build_hair(rig, spec, d)
+	if not _build_sculpted(rig, spec, d, pal):
+		_build_body(rig, spec, d, pal)
+		_build_head(rig, spec, d)
+		_build_hair(rig, spec, d)
 	CharacterOutfits.dress(rig, spec, d, pal)
 	CharacterOutfits.add_hat(rig, spec, d, pal)
 	CharacterOutfits.add_prop(rig, spec, d)
@@ -141,6 +142,106 @@ static func _make_joints(rig: CharacterRig, model: Node3D, d: Dictionary) -> voi
 	back.position = Vector3(0, d.chest * 0.55, 0.16)
 	rig.joints["Chest"].add_child(back)
 	rig.sockets["back"] = back
+
+
+## The sculpted model (see CharacterMeshes): a smooth body skinned to the joints,
+## and the head, eyes, brows and hair on the Head joint. Returns false when the
+## meshes for this look aren't baked, so the primitive model is built instead.
+static func _build_sculpted(rig: CharacterRig, spec: CharacterSpec, d: Dictionary, pal: Dictionary) -> bool:
+	var body_mesh := CharacterMeshes.body(spec.body, spec.build, spec.age)
+	var head_mesh := CharacterMeshes.head(spec.body, spec.face, spec.age)
+	if body_mesh == null or head_mesh == null:
+		return false
+	var skin: Color = CharacterStyle.SKINS.get(spec.skin, CharacterStyle.SKINS["fair"])
+	var hair_color := hair_color_for(spec)
+	var girl := spec.body == "girl"
+	var child := spec.age <= 0
+	rig.sculpted = true
+	# Skeleton mirroring the joints; CharacterRig copies the joints' poses onto it every frame.
+	var skel := Skeleton3D.new()
+	skel.name = "Skeleton"
+	rig.body_root.add_child(skel)
+	rig.skeleton = skel
+	for entry in JOINTS:
+		var j: Node3D = rig.joints[entry[0]]
+		var i := skel.add_bone(entry[0])
+		if entry[1] != "":
+			skel.set_bone_parent(i, skel.find_bone(entry[1]))
+		# The meshes are sculpted standing straight; an elder's stoop is a pose on top.
+		var rest_rot := Vector3.ZERO if entry[0] in ["Spine", "Neck"] else j.rotation
+		skel.set_bone_rest(i, Transform3D(Basis.from_euler(rest_rot), j.position))
+	skel.reset_bone_poses()
+	var body := MeshInstance3D.new()
+	body.name = "BodyMesh"
+	body.mesh = body_mesh
+	skel.add_child(body)
+	body.skeleton = NodePath("..")
+	var body_mat := CharacterMeshes.body_material(skin, pal)
+	body_mat.set_shader_parameter("vneck_y", float(body_mesh.get_meta("vneck_y", 10.0)) if spec.outfit == "farm" or spec.outfit == "villager" else 10.0)
+	body_mat.set_shader_parameter("vneck_slope", float(body_mesh.get_meta("vneck_slope", 1.6)))
+	var hand_mat := CharacterMeshes.skin_material(skin)
+	for s in body_mesh.get_surface_count():
+		body.set_surface_override_material(s, body_mat if body_mesh.surface_get_name(s) == "body" else hand_mat)
+	rig.shader_materials.append_array([body_mat, hand_mat])
+	rig.built_parts.append_array(["BodyMesh", "HandL", "HandR"])
+	# Head, eyes, brows and lashes.
+	var head_scale: float = d.head_r / CharacterMeshes.BASE_HEAD_R
+	var head := MeshInstance3D.new()
+	head.name = "HeadMesh"
+	head.mesh = head_mesh
+	head.scale = Vector3.ONE * head_scale
+	var face_mat := CharacterMeshes.skin_material(skin, true, girl, child)
+	face_mat.set_shader_parameter("mouth_y", float(head_mesh.get_meta("mouth_y", -0.5)))
+	face_mat.set_shader_parameter("cheek_x", float(head_mesh.get_meta("cheek_x", 0.43)))
+	var eye_mat := CharacterMeshes.eye_material(CharacterStyle.EYES.get(spec.eyes, CharacterStyle.EYES["brown"]))
+	var brow_mat := CharacterMeshes.hair_material(hair_color.darkened(0.12))
+	for s in head_mesh.get_surface_count():
+		match head_mesh.surface_get_name(s):
+			"skin": head.set_surface_override_material(s, face_mat)
+			"eye": head.set_surface_override_material(s, eye_mat)
+			"hair": head.set_surface_override_material(s, brow_mat)
+			_: head.set_surface_override_material(s, CharacterMeshes.lash_material())
+	rig.joints["Head"].add_child(head)
+	rig.shader_materials.append_array([face_mat, eye_mat, brow_mat])
+	rig.built_parts.append_array(["HeadMesh", "Eyes", "Brows"])
+	# Hair, groomed on the round skull and widened to this face.
+	var hair_mesh := CharacterMeshes.hair(spec.hair_style)
+	if hair_mesh:
+		var hair := MeshInstance3D.new()
+		hair.name = "Hair"
+		hair.mesh = hair_mesh
+		hair.scale = Vector3(float(head_mesh.get_meta("cranium_w", 1.0)), 1, 1) * head_scale
+		var hair_mat := CharacterMeshes.hair_material(hair_color)
+		if spec.hair_style == "shaved":
+			hair_mat.set_shader_parameter("stubble", 1.0)
+		hair.material_override = hair_mat
+		rig.joints["Head"].add_child(hair)
+		rig.shader_materials.append(hair_mat)
+		rig.built_parts.append("Hair")
+	if spec.beard in ["full", "long"]:
+		var beard_mesh := CharacterMeshes.beard(spec.face, spec.beard)
+		if beard_mesh:
+			var beard := MeshInstance3D.new()
+			beard.name = "Beard"
+			beard.mesh = beard_mesh
+			beard.scale = Vector3.ONE * head_scale
+			var beard_mat := CharacterMeshes.hair_material(hair_color)
+			beard.material_override = beard_mat
+			rig.joints["Head"].add_child(beard)
+			rig.shader_materials.append(beard_mat)
+			rig.built_parts.append("Beard")
+	elif spec.beard == "stubble":
+		face_mat.set_shader_parameter("stubble_color", hair_color)
+		face_mat.set_shader_parameter("stubble", 0.6)
+	return true
+
+
+## Hair colour for a look; elders go grey.
+static func hair_color_for(spec: CharacterSpec) -> Color:
+	var color: Color = CharacterStyle.HAIR_COLORS.get(spec.hair_color, CharacterStyle.HAIR_COLORS["brown"])
+	if spec.age >= 3:
+		color = color.lerp(Color("#e8e6e0"), 0.85)
+	return color
 
 
 static func _build_body(rig: CharacterRig, spec: CharacterSpec, d: Dictionary, pal: Dictionary) -> void:

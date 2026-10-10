@@ -54,6 +54,9 @@ static func dress(rig: CharacterRig, spec: CharacterSpec, d: Dictionary, pal: Di
 	var leather: Color = pal.leather
 	var metal: Color = pal.metal
 	for piece in pieces_for(spec):
+		# The sculpted body already wears the collar, belt and boot cuffs.
+		if rig.sculpted and piece in ["collar", "belt", "cuffs"]:
+			continue
 		match piece:
 			"collar":
 				for sx in [-1.0, 1.0]:
